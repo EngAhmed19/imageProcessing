@@ -60,9 +60,6 @@ class AdvancedEdgeDetection:
             ]
         )
 
-
-        
-
     def differenceOperator(self, threshold: int = None, strategy :ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD)-> np.ndarray:
         """
 
@@ -81,10 +78,7 @@ class AdvancedEdgeDetection:
         # print(f"Filterd image in the class  {filtered_image.shape}")
         # print(f"Edge map in the class  {edge_map.shape}")
         return edge_map
-
-
-
-        
+  
     def differenceOfGaussians(self):
         pass
     def contrastBaseEdgeDetecto(self):
