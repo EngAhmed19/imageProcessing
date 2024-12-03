@@ -9,7 +9,20 @@ def convertImageToGray(image: np.ndarray) -> np.ndarray:
 		return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 	return image
 
+def custImageToGray(image: np.ndarray)-> np.ndarray:
+	'''
+	Luminosity Method : 
+	Uses weighted average based on human perception of color brightness.
+	we can use this but some images may have a fourth channel, so we slice only three channels.
 
+    `return np.dot(img, [0.2989, 0.5870, 0.1140])`
+    but using `img[..., :3]` or `img[:, :, :3]` is taking care of this possibility
+	'''
+
+	return np.dot(image[:, :, :3], [0.2989, 0.5870, 0.1140])
+
+
+	
 def calculateSumOfHist(histogram: np.ndarray) -> np.ndarray:
 	sum_of_hist = [0] * len(histogram)
 	sum_i = 0
