@@ -15,8 +15,8 @@ def plot_histogram(image: np.ndarray, label: str):
 	return fig
 
 
-def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple [np.ndarray, np.ndarray]:
-	result, gray_image_fn = None, None
+def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.ndarray]:
+	result, gray_image_fn = None, None # NOQA
 	if image is not None:
 		gray_image_fn = convertImageToGray(image)
 
@@ -34,17 +34,17 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple [np.ndarr
 	return gray_image_fn, result
 
 
-def histogramEqualization(image: np.ndarray) -> tuple [np.ndarray, np.ndarray, plt.Figure, plt.Figure]:
-	gray_image, equalized_image_result = None, None
-	gray_hist_plot, equalized_hist_plot = None, None
+def histogramEqualization(image: np.ndarray) -> tuple[np.ndarray, np.ndarray, plt.Figure, plt.Figure]:
+	gray_image_gradio, equalized_image_result = None, None
+	gray_hist_plot, equalized_hist_plot = None, None # NOQA
 	if image is not None:
 		equalized_image = Histogram(image)
-		gray_image, equalized_image_result = equalized_image.histogramEqualization()
+		gray_image_gradio, equalized_image_result = equalized_image.histogramEqualization()
 
-		gray_hist_plot: plt.Figure = plot_histogram(gray_image, "Histogram of gray image")
+		gray_hist_plot: plt.Figure = plot_histogram(gray_image_gradio, "Histogram of gray image")
 		equalized_hist_plot: plt.Figure = plot_histogram(equalized_image_result, "Histogram of equalized image")
 
-	return gray_image, equalized_image_result, gray_hist_plot, equalized_hist_plot
+	return gray_image_gradio, equalized_image_result, gray_hist_plot, equalized_hist_plot
 
 
 with gr.Blocks() as demo:
