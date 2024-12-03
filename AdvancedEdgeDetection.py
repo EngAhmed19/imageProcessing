@@ -1,5 +1,5 @@
 import numpy as np
-from helperFunctions import custImageToGray, convolution, custGenericFilter
+from helperFunctions import custImageToGray, convolution, custGenericFilter, ThresholdStrategy, custDynamicThreshold
 
 class AdvancedEdgeDetection:
     def __init__(self, image:np.ndarray):
@@ -18,7 +18,7 @@ class AdvancedEdgeDetection:
         return np.max(diff)
        
 
-    def homogeneityOperator(self, area_size: int = 3, threshold: int = None)-> np.ndarray:
+    def homogeneityOperator(self, area_size: int = 3, threshold: int = None, strategy :ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD)-> np.ndarray:
         """
         Applies the Homogeneity Operator for edge detection.
         
@@ -34,7 +34,8 @@ class AdvancedEdgeDetection:
         if threshold:
             threshold = threshold
         else:
-            threshold = np.mean(filtered_image) + np.std(filtered_image)
+            # strategy is Enum
+            threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
         
         print(f"threshold {threshold}")
         # Convert to 0 or 255 (binary image)
@@ -59,10 +60,7 @@ class AdvancedEdgeDetection:
             ]
         )
 
-
-        
-
-    def differenceOperator(self, threshold: int = None)-> np.ndarray:
+    def differenceOperator(self, threshold: int = None, strategy :ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD)-> np.ndarray:
         """
 
         """
@@ -71,7 +69,8 @@ class AdvancedEdgeDetection:
         if threshold:
             threshold = threshold
         else:
-            threshold = np.mean(filtered_image) + np.std(filtered_image)
+            # strategy is Enum
+            threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
         
         print(f"threshold {threshold}")
         # Convert to 0 or 255 (binary image)
@@ -79,10 +78,7 @@ class AdvancedEdgeDetection:
         # print(f"Filterd image in the class  {filtered_image.shape}")
         # print(f"Edge map in the class  {edge_map.shape}")
         return edge_map
-
-
-
-        
+  
     def differenceOfGaussians(self):
         pass
     def contrastBaseEdgeDetecto(self):

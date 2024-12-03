@@ -1,5 +1,5 @@
 import numpy as np
-from helperFunctions import convertImageToGray, convolution
+from helperFunctions import convolution, custImageToGray
 
 
 class BasicEdgeDetection:
@@ -10,9 +10,18 @@ class BasicEdgeDetection:
 		:arg image:The input image.
 	"""
 
-	def __init__(self, image: np.ndarray):
+	def __init__(self, image: np.ndarray, contrast_based_smoothing: bool = False):
 		self.image = image
-		self.gray_image = convertImageToGray(image)
+		# self.gray_image = convertImageToGray(image)
+		self.gray_image = custImageToGray(image)
+		self.contrast_based_smoothing = contrast_based_smoothing
+
+		if self.contrast_based_smoothing:
+			self.gray_image = self._contrastSmoothing(self.gray_image)
+
+	def _contrastSmoothing(self, image: np.ndarray) -> np.ndarray: # NOQA
+		smoothing_kernel = np.ones((3, 3)) / 9
+		return convolution(image, smoothing_kernel)
 
 	def _calculateEdgeDetection(self, mask1: np.ndarray, mask2: np.ndarray) -> np.ndarray:
 		"""
