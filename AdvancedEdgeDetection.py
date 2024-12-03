@@ -42,8 +42,47 @@ class AdvancedEdgeDetection:
         # print(f"Filterd image in the class  {filtered_image.shape}")
         # print(f"Edge map in the class  {edge_map.shape}")
         return edge_map
-    def differenceOperator(self):
-        pass
+    
+    def _differenceFunction(self, neighborhood: np.ndarray) -> float:
+        """
+        Applies the Difference Operator for edge detection.
+        Used with custGenericFilter,
+        It calculates differences between specific pixel pairs and returns the maximum value.
+        It work with 3×3 only 
+        """
+        return np.max(
+            [
+                np.abs(neighborhood[0, 0] - neighborhood[2, 2]),  # Top-left ➖ Bottom-right
+                np.abs(neighborhood[0, 2] - neighborhood[2, 0]),  # Top-right ➖ Bottom-left
+                np.abs(neighborhood[0, 1] - neighborhood[2, 1]),  # Top-center ➖ Bottom-center
+                np.abs(neighborhood[1, 0] - neighborhood[1, 2]),  # Left-center ➖ Right-center
+            ]
+        )
+
+
+        
+
+    def differenceOperator(self, threshold: int = None)-> np.ndarray:
+        """
+
+        """
+        area_size: int = 3 # it work with 3×3
+        filtered_image = custGenericFilter(self.gray_image, function=self._differenceFunction, kernel_size=area_size, padding=True)
+        if threshold:
+            threshold = threshold
+        else:
+            threshold = np.mean(filtered_image) + np.std(filtered_image)
+        
+        print(f"threshold {threshold}")
+        # Convert to 0 or 255 (binary image)
+        edge_map = (filtered_image > threshold).astype(np.uint8) * 255
+        # print(f"Filterd image in the class  {filtered_image.shape}")
+        # print(f"Edge map in the class  {edge_map.shape}")
+        return edge_map
+
+
+
+        
     def differenceOfGaussians(self):
         pass
     def contrastBaseEdgeDetecto(self):
