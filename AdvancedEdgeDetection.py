@@ -79,12 +79,43 @@ class AdvancedEdgeDetection:
         # print(f"Edge map in the class  {edge_map.shape}")
         return edge_map
   
+    def contrastBaseSmoothing(self, smoothing_factor: float =(1/9)):
+       cpy_img = self.gray_image.copy()
+       smoothing_kernel = np.ones((3,3)) / smoothing_factor
+       return convolution(cpy_img, smoothing_kernel)
     def differenceOfGaussians(self):
         pass
-    def contrastBaseEdgeDetecto(self):
-        pass
-    def varianceEdgeDetector(self):
-        pass
+    def _varianceFunction(self, neighborhood: np.ndarray)->float:
+        mean = np.mean(neighborhood)
+        std = np.std(neighborhood)
+        return (mean+std)**2 / (len(neighborhood))
+    def varianceEdgeDetector(self, kernel_size: int = 3, strategy :ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD):
+        """
+        Applies variance-based edge detection to the grayscale image using a local variance filter.
+
+        This method uses a sliding window approach to compute the variance within each local region of the image.
+        High variance regions indicate edges, as the pixel values change more drastically in these areas.
+        The function applies the `_varianceFunction` to each local region using the specified kernel size.
+        
+        :param kernel_size: The size of the square kernel to use for calculating local variance. Default is 3.
+                         A larger kernel size considers a bigger neighborhood, which can smooth out finer details
+                         but might miss sharp edges. A smaller kernel focuses on finer, more localized edges.
+        :type kernel_size: int
+
+        :return: A binary image where edges are highlighted, with higher variance regions indicating edges.
+        :rtype: np.ndarray
+
+        :note:
+            - The function relies on a helper method `custGenericFilter` that applies the variance filter to the image.
+            - The `padding=True` argument ensures that the image edges are handled correctly by padding the image during the convolution process.
+    
+        """
+        filtered_image =  custGenericFilter(self.gray_image, function=self._varianceFunction, kernel_size=kernel_size, padding=True)
+        threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
+        return (filtered_image > threshold).astype(np.uint8) * 255
+
+
+        
     def rangeEdgeDetector(self):
         pass
 
