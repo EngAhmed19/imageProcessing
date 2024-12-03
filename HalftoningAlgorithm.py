@@ -1,13 +1,11 @@
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 from helperFunctions import convertImageToGray
 
 
 class HalfToningImage:
 	def __init__(self, image: np.ndarray):
 		self.image = image
-		self.gray_image=convertImageToGray(image)
+		self.gray_image = convertImageToGray(image)
 
 	def simpleHalftoning(self) -> np.ndarray:
 		half_toning_image: np.ndarray = np.zeros(self.gray_image.shape)

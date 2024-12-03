@@ -32,4 +32,3 @@ class Histogram:
 				equalized_image[i, j] = (dm / area) * sum_of_hist[k]
 
 		return self.gray_image, equalized_image
-
