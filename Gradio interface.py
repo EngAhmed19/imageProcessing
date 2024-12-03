@@ -6,7 +6,13 @@ from HalftoningAlgorithm import HalfToningImage, convertImageToGray
 from HistogramEqualization import Histogram
 
 
-def plot_histogram(image: np.ndarray, label: str):
+def plot_histogram(image: np.ndarray, label: str) -> plt.Figure:
+	"""
+	This function show the histogram of the image in the gradio interface.
+	:param image: The input image
+	:param label: The label that show on the figure.
+	:return: A figure with the histogram of the image
+	"""
 	fig, ax = plt.subplots()
 	ax.hist(image.ravel(), bins=256, range=(0, 255), alpha=0.7)
 	ax.set_title(label)
@@ -16,7 +22,38 @@ def plot_histogram(image: np.ndarray, label: str):
 
 
 def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.ndarray]:
-	result, gray_image_fn = None, None # NOQA
+	"""
+	Apply a halftoning algorithm to an image based on the selected choice. This function supports two types of halftoning
+	algorithms:
+
+	- Simple Halftoning
+	- Error Diffusion Halftoning
+
+	The function converts the input image to grayscale before applying the halftoning algorithm.
+	The result is normalized to the range [0, 1].
+
+	:param image:The input image as a NumPy array. Must be a valid image array.
+	:type image: np.ndarray
+
+	:param choice:
+		The choice of halftoning algorithm to apply. Options are:
+		- "Simple Halftoning"
+		- "Error Diffusion Halftoning"
+	:type choice: str
+
+	:return:
+		A tuple containing:
+		- The grayscale version of the input image as a NumPy array.
+		- The halftoned image result as a NumPy array (normalized to [0, 1]).
+	:rtype: tuple[np.ndarray, np.ndarray]
+
+	Example usage::
+
+		>>> gray_image_, halftoned_image = simpleHalfToningAlgorithm(image, "Simple Halftoning")
+
+
+	"""
+	result, gray_image_fn = None, None  # NOQA
 	if image is not None:
 		gray_image_fn = convertImageToGray(image)
 
@@ -35,8 +72,24 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarra
 
 
 def histogramEqualization(image: np.ndarray) -> tuple[np.ndarray, np.ndarray, plt.Figure, plt.Figure]:
+	"""
+	Apply the histogram equalization to an image.
+
+	Then it plot the histogram for both the gray scale image and the equalized image.
+	:param image:The input array image as numpy array.
+	:type image:np.ndarray
+
+
+	:returns:
+		A tuple containing the following:
+		- The gray image as numpy array.
+		- The equalized image as numpy array.
+		- The plot of the histogram for the image as a figure.
+		- The plot of the histogram for the equalized image as a figure.
+	:rtype: tuple[np.ndarray, np.ndarray, plt.Figure, plt.Figure]
+	"""
 	gray_image_gradio, equalized_image_result = None, None
-	gray_hist_plot, equalized_hist_plot = None, None # NOQA
+	gray_hist_plot, equalized_hist_plot = None, None  # NOQA
 	if image is not None:
 		equalized_image = Histogram(image)
 		gray_image_gradio, equalized_image_result = equalized_image.histogramEqualization()

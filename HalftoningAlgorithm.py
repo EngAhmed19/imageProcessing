@@ -3,11 +3,24 @@ from helperFunctions import convertImageToGray
 
 
 class HalfToningImage:
+	"""
+	This is a halftoning class that apply halftoning algorithms on the image
+
+	:argument:
+		:param image: The input image
+		:type image: np.ndarray
+	"""
 	def __init__(self, image: np.ndarray):
 		self.image = image
 		self.gray_image = convertImageToGray(image)
 
 	def simpleHalftoning(self) -> np.ndarray:
+		"""
+		Apply simple halftoning algorithm on the image.
+
+		:returns: The result image after applying simple halftoning algorithm.
+		:rtype: np.ndarray.
+		"""
 		half_toning_image: np.ndarray = np.zeros(self.gray_image.shape)
 
 		row, column = self.gray_image.shape
@@ -21,6 +34,11 @@ class HalfToningImage:
 		return half_toning_image
 
 	def errorDiffusionHalfToning(self) -> np.ndarray:
+		"""
+		Applying error diffusion algorithm on the image.
+		:return: The image after applying error diffusion halftoning algorithm.
+		:rtype: np.ndarray
+		"""
 		gray_image: np.ndarray = convertImageToGray(self.image).astype(np.float32)
 
 		half_toning_image: np.ndarray = np.zeros_like(gray_image)
