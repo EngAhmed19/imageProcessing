@@ -15,7 +15,7 @@ def plot_histogram(image: np.ndarray, label: str):
 	return fig
 
 
-def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> (np.ndarray, np.ndarray):
+def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple [np.ndarray, np.ndarray]:
 	result, gray_image_fn = None, None
 	if image is not None:
 		gray_image_fn = convertImageToGray(image)
@@ -34,7 +34,7 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> (np.ndarray, np
 	return gray_image_fn, result
 
 
-def histogramEqualization(image: np.ndarray) -> (np.ndarray, np.ndarray, plt.Figure, plt.Figure):
+def histogramEqualization(image: np.ndarray) -> tuple [np.ndarray, np.ndarray, plt.Figure, plt.Figure]:
 	gray_image, equalized_image_result = None, None
 	gray_hist_plot, equalized_hist_plot = None, None
 	if image is not None:
