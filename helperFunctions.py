@@ -25,7 +25,9 @@ def custImageToGray(image: np.ndarray)-> np.ndarray:
 		np.ndarry: numpy array represent the gray image pixels.
 		
 	'''
-
+	# this is a binary image
+	if len(image.shape) < 3:
+		return image
 	return np.dot(image[:, :, :3], [0.2989, 0.5870, 0.1140])
 
 
