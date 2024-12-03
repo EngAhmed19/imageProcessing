@@ -7,7 +7,11 @@ edge_detector = AdvancedEdgeDetection(image)
 
 
 # Apply the homogeneity operator with kernel size 3 and threshold 50
-edges = edge_detector.homogeneityOperator(area_size=3)
+# edges = edge_detector.homogeneityOperator(area_size=3)
+# print(f"image shape when edged {edges.shape}")
+
+# Apply the difference operator 
+edges = edge_detector.differenceOperator()
 print(f"image shape when edged {edges.shape}")
 
 # Show the result (for example, using matplotlib if needed)
