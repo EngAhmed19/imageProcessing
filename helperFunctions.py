@@ -1,5 +1,7 @@
 import numpy as np
+from enum import Enum
 import cv2
+
 
 np.set_printoptions(suppress=True)
 
@@ -59,6 +61,61 @@ def convolution(image: np.ndarray, filter_mask: np.ndarray) -> np.ndarray:
 			convolved_image[i, j] = np.sum(np.multiply(matrix, filter_mask))
 
 	return convolved_image
+
+
+class ThresholdStrategy(Enum):
+	MEAN_PLUS_STD = "mean+std"
+	MEAN_MINUS_STD = "mean-std"
+	MEDIAN_PLUS_STD = "median+std"
+	MEAN = "mean"
+	STD = "std"
+	MEDIAN = "median"
+
+
+
+def custDynamicThreshold(image: np.ndarray, strategy: ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD):
+	"""
+	Custom implementation of a dynamic thresholding method based on different strategies.
+
+	This function calculates a threshold value for an input grayscale image using a specified 
+	strategy from the `ThresholdStrategy` enumeration. Different strategies provide flexibility 
+	in choosing how the threshold is computed based on image statistics.
+
+	:param image: 
+		The input image as a 2D numpy array (grayscale). The function assumes that the image is 
+		preprocessed and normalized if necessary.
+
+	:param strategy: 
+		The thresholding strategy to use, selected from the `ThresholdStrategy` enum. 
+		Available strategies include:
+			- `ThresholdStrategy.MEAN_PLUS_STD`: Mean of the image values plus one standard deviation.
+			- `ThresholdStrategy.MEAN_MINUS_STD`: Absolute value of the mean minus the standard deviation.
+			- `ThresholdStrategy.MEDIAN_PLUS_STD`: Median of the image values plus one standard deviation.
+			- `ThresholdStrategy.MEAN`: Mean of the image values only.
+			- `ThresholdStrategy.STD`: Standard deviation of the image values only.
+			- `ThresholdStrategy.MEDIAN`: Median of the image values only.
+
+	:return:
+		The computed threshold value as a float based on the selected strategy.
+
+	:raises ValueError:
+		If an unsupported strategy is provided.
+	"""
+	if strategy == ThresholdStrategy.MEAN_PLUS_STD:
+		return np.mean(image) + np.std(image)
+	elif strategy == ThresholdStrategy.MEAN_MINUS_STD:
+		return np.abs(np.mean(image) - np.std(image))
+	elif strategy == ThresholdStrategy.MEAN:
+		return np.mean(image)
+	elif strategy == ThresholdStrategy.STD:
+		return np.std(image)
+	elif strategy == ThresholdStrategy.MEDIAN:
+		return np.median(image)
+	elif strategy == ThresholdStrategy.MEDIAN_PLUS_STD:
+		return np.median(image) + np.std(image)
+	else:
+		raise ValueError("Not Supported Strategy")
+
 
 
 def custGenericFilter(image: np.ndarray, function, kernel_size: int = 3, padding: bool = True, **Kwargs) -> np.ndarray:
