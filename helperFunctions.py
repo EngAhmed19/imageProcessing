@@ -17,11 +17,10 @@ def custImageToGray(image: np.ndarray) -> np.ndarray:
 	channels,but using `img[..., :3]` or ` img[:, :, :3]` is taking care of this possibility Args: image (np.ndarry):
 	numpy array of image pixels.
 
-	Args:
+	:parameter:
 		:param image: The input image
 
-	Returns:
-		np.ndarry: numpy array represent the gray image pixels.
+	:return: np.ndarry: numpy array represent the gray image pixels.
 
 	"""
 	# this is a binary image
@@ -67,19 +66,16 @@ def custGenericFilter(image: np.ndarray, function, kernel_size: int = 3, padding
 	Custom implementation of generic filter, it applies some operation on an image using a kernel.
 	It's some sort of sliding window.
 
-	Args:
+	:parameter:
 		:param kernel_size: The size of the window (must be an odd number).
 		:param function: The custom operation (function) to apply on each window.
 		:param image: The input image (grayscale).
 		:param padding: To pad the image or not to pad it.
-		**kwargs: Additional padding options (e.g., pad_value, pad_mode).
+		:keyword **kwargs: Additional padding options (e.g., pad_value, pad_mode).
 
-	Returns:
-		np.ndarray: The resulting image after applying the custom operation.
+	:returns:np.ndarray: The resulting image after applying the custom operation.
 
-	Raises:
-		ValueError
-		Kernel size must be an odd number.
+	:raises ValueError :Kernel size must be an odd number.
 	"""
 	if kernel_size % 2 == 0:
 		raise ValueError("Kernel size must be an odd number.")
