@@ -19,7 +19,7 @@ edge_detector = AdvancedEdgeDetection(image)
 # print(f"image shape when edged {edges.shape}")
 
 # Apply the variance operator 
-edges = edge_detector.varianceEdgeDetector()
+edges = edge_detector.rangeEdgeDetector()
 print(f"image shape when edged {edges.shape}")
 
 # Basic Edge 

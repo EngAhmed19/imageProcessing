@@ -90,6 +90,7 @@ class AdvancedEdgeDetection:
         std = np.std(neighborhood)
         return (mean+std)**2 / (len(neighborhood))
     def varianceEdgeDetector(self, kernel_size: int = 3, strategy :ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD):
+
         """
         Applies variance-based edge detection to the grayscale image using a local variance filter.
 
@@ -113,9 +114,12 @@ class AdvancedEdgeDetection:
         filtered_image =  custGenericFilter(self.gray_image, function=self._varianceFunction, kernel_size=kernel_size, padding=True)
         threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
         return (filtered_image > threshold).astype(np.uint8) * 255
+    def _rangeFunction(self, neighborhood: np.ndarray)->float:
+        return np.max(neighborhood) - np.min(neighborhood)
 
+    def rangeEdgeDetector(self, kernel_size: int = 3, strategy :ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD):
+        filtered_image = custGenericFilter(self.gray_image, function=self._rangeFunction, kernel_size=kernel_size, padding=True)
+        threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
+        return (filtered_image > threshold).astype(np.uint8) * 255
 
-        
-    def rangeEdgeDetector(self):
-        pass
 
