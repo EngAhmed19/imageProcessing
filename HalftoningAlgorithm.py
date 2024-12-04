@@ -6,13 +6,19 @@ class HalfToningImage:
 	"""
 	This is a halftoning class that apply halftoning algorithms on the image
 
-	:argument:
+	:parameter:
 		:param image: The input image
 		:type image: np.ndarray
+
+	:raises ValueError: The image must be specified. please provide an image
 	"""
+
 	def __init__(self, image: np.ndarray):
-		self.image = image
-		self.gray_image = convertImageToGray(image)
+		if not image.any():
+			raise ValueError("The image must be specified. please provide an image")
+		else:
+			self.image = image
+			self.gray_image = convertImageToGray(image)
 
 	def simpleHalftoning(self) -> np.ndarray:
 		"""

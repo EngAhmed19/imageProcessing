@@ -1,57 +1,25 @@
 import numpy as np
-import matplotlib.image as mplt
-from AdvancedEdgeDetection import AdvancedEdgeDetection
-from BasicEdgeDetection import BasicEdgeDetection
-
-image = mplt.imread('images/flower.png') # Simulated grayscale image (replace with actual image)
-# print(f"image shape when readed {image.shape}")
-edge_detector = AdvancedEdgeDetection(image)
-# basic_edge_detector = BasicEdgeDetection(image)
-# basic_edge_detector_contrast = BasicEdgeDetection(image, contrast_based_smoothing=True)
-
-
-# Apply the homogeneity operator with kernel size 3 and threshold 50
-# edges = edge_detector.homogeneityOperator(area_size=3)
-# print(f"image shape when edged {edges.shape}")
-
-# Apply the difference operator 
-# edges = edge_detector.differenceOperator()
-# print(f"image shape when edged {edges.shape}")
-
-# Apply the variance operator 
-# edges = edge_detector.rangeEdgeDetector()
-# print(f"image shape when edged {edges.shape}")
-
-# DoG
-# sigma 1 , 1->3
-# sigma 2 , 2->5
-edges = edge_detector.differenceOfGaussians(sigma1=1, sigma2=3)
-print(f"image shape when edged {edges.shape}")
-
-# Basic Edge 
-# edges = basic_edge_detector.sobelEdgeDetection()
-# edges_contrast = basic_edge_detector_contrast.sobelEdgeDetection()
-
-# print(f"image shape when edged {edges.shape}")
-# print(f"image shape when edged {edges_contrast.shape}")
-
 import matplotlib.pyplot as plt
-# # Create a subplot with 1 row and 2 columns
-# fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+from BasicEdgeDetection import BasicEdgeDetection
+import cv2
 
-# # Plot the edges image
-# axs[0].imshow(edges, cmap='gray')
-# axs[0].set_title("Edge Detection (Normal)")
-# axs[0].axis('off')  # Hide axes for cleaner presentation
+image = cv2.imread("images/bad_light_1.jpg")
+gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
-# # Plot the edges_contrast image
-# axs[1].imshow(edges_contrast, cmap='gray')
-# axs[1].set_title("Edge Detection (With Contrast Smoothing)")
-# axs[1].axis('off')  # Hide axes for cleaner presentation
+basic_edge_detection = BasicEdgeDetection(image, contrast_based_smoothing=True)
 
-# # Show the plot
-# plt.tight_layout()  # Adjust the layout to avoid overlap
-# plt.show()
+gradient, direction = basic_edge_detection.kirschEdgeDetectionWithDirection()
 
-plt.imshow(edges, cmap='gray')
+plt.subplot(1, 2, 1)
+plt.imshow(gradient, cmap="gray")
+plt.subplot(1, 2, 2)
+plt.imshow(np.zeros_like(gradient), cmap="gray")
+print(direction)
+subset_directions = direction[::15, ::15]
+for i in range(subset_directions.shape[0]):
+	for j in range(subset_directions.shape[1]):
+		plt.text(j * 15, i * 15, subset_directions[i, j], color='red', fontsize=10, fontweight='bold', ha='center', # NOQA
+				 va='center')  # NOQA
+
+plt.axis("off")
 plt.show()

@@ -6,21 +6,30 @@ class Histogram:
 	"""
 	A histogram class that calculate the histogram of an image and apply histogram equalization.
 
-	:argument:
-		:arg image: The input image
+	:parameter:
+		:param image: The input image
+		:type image:np.ndarray
+
+	:raises ValueError: The image must be specified. please provide an image
 	"""
 
 	def __init__(self, image: np.ndarray):
-		self.image = image
-		self.gray_image = convertImageToGray(image)
-		self.flat_image = self.gray_image.flatten()
+		if not image.any():
+			raise ValueError("The image must be specified. please provide an image")
+		else:
+			self.image = image
+			self.gray_image = convertImageToGray(image)
+			self.flat_image = self.gray_image.flatten()
 
 	def getHistogram(self, bins: int = 256) -> np.ndarray:
 		"""
+
 		This function get the histogram of an image.
 
-		:param bins: number of bins in the histogram.
-		:type bins:int
+
+		:param bins:number of bins in the histogram.
+		:type bins : int
+
 		:return: the histogram of an image.
 		:rtype: np.ndarray
 		"""

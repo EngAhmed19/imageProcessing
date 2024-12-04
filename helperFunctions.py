@@ -1,7 +1,6 @@
 import numpy as np
 from enum import Enum
-# import cv2
-
+import cv2
 
 np.set_printoptions(suppress=True)
 
@@ -45,7 +44,7 @@ def calculateTargetSize(image: np.ndarray, kernel: int, padding: int, stride: in
 
 	out_shape: tuple[int, int] = (
 		int(((w - kernel + (2 * padding) / stride) + 1)), int(((h - kernel + (2 * padding) / stride) + 1))
-		)
+	)
 	return out_shape
 
 
@@ -71,7 +70,6 @@ class ThresholdStrategy(Enum):
 	MEAN = "mean"
 	STD = "std"
 	MEDIAN = "median"
-
 
 
 def custDynamicThreshold(image: np.ndarray, strategy: ThresholdStrategy = ThresholdStrategy.MEAN_PLUS_STD):
@@ -118,7 +116,6 @@ def custDynamicThreshold(image: np.ndarray, strategy: ThresholdStrategy = Thresh
 		raise ValueError("Not Supported Strategy")
 
 
-
 def custGenericFilter(image: np.ndarray, function, kernel_size: int = 3, padding: bool = True, **Kwargs) -> np.ndarray:
 	"""
 	Custom implementation of generic filter, it applies some operation on an image using a kernel.
@@ -131,9 +128,9 @@ def custGenericFilter(image: np.ndarray, function, kernel_size: int = 3, padding
 		:param padding: To pad the image or not to pad it.
 		:keyword **kwargs: Additional padding options (e.g., pad_value, pad_mode).
 
-	:returns:np.ndarray: The resulting image after applying the custom operation.
+	:returns: The resulting image after applying the custom operation.
 
-	:raises ValueError :Kernel size must be an odd number.
+	:raises ValueError: Kernel size must be an odd number.
 	"""
 	if kernel_size % 2 == 0:
 		raise ValueError("Kernel size must be an odd number.")
@@ -156,7 +153,8 @@ def custGenericFilter(image: np.ndarray, function, kernel_size: int = 3, padding
 	output_image = np.zeros_like(padded_image, dtype=np.float32)
 
 	for row in range(pad_size, padded_image.shape[0] - pad_size):  # start looping from the first row before padding
-		for col in range(pad_size, padded_image.shape[1] - pad_size):  # start looping from the first column before padding
+		for col in range(pad_size,
+						 padded_image.shape[1] - pad_size):  # start looping from the first column before padding # NOQA
 			neighborhood = padded_image[(row - pad_size): (row + pad_size + 1), (col - pad_size): (col + pad_size + 1)]
 
 			output_image[row, col] = function(neighborhood)
