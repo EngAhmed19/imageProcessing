@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from HalftoningAlgorithm import HalfToningImage, convertImageToGray
+from BasicEdgeDetection import BasicEdgeDetection
+from AdvancedEdgeDetection import AdvancedEdgeDetection, ThresholdStrategy
 from HistogramEqualization import Histogram
 
 
@@ -99,6 +101,29 @@ def histogramEqualization(image: np.ndarray) -> tuple[np.ndarray, np.ndarray, pl
 
 	return gray_image_gradio, equalized_image_result, gray_hist_plot, equalized_hist_plot
 
+# Callback for Basic Edge Detection
+def apply_basic_edge_detection(image, method, contrast_smoothing):
+    basic_detector = BasicEdgeDetection(image, contrast_based_smoothing=contrast_smoothing)
+    if method == "Sobel":
+        return basic_detector.sobelEdgeDetection()
+    elif method == "Perwitt":
+        return basic_detector.perwittEdgeDetection()
+
+# Callback for Advanced Edge Detection
+def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy:ThresholdStrategy, sigma1, sigma2):
+    advanced_detector = AdvancedEdgeDetection(image)
+    strategy = threshold_strategy
+
+    if method == "Homogeneity":
+        return advanced_detector.homogeneityOperator(area_size=kernel_size, strategy=strategy)
+    elif method == "Difference":
+        return advanced_detector.differenceOperator(strategy=strategy)
+    elif method == "Variance":
+        return advanced_detector.varianceEdgeDetector(kernel_size=kernel_size, strategy=strategy)
+    elif method == "Range":
+        return advanced_detector.rangeEdgeDetector(kernel_size=kernel_size, strategy=strategy)
+    elif method == "Difference of Gaussians":
+        return advanced_detector.differenceOfGaussians(sigma1=sigma1, sigma2=sigma2)
 
 with gr.Blocks() as demo:
 	with gr.Tab("Halftoning Algorithms"):
@@ -152,6 +177,8 @@ with gr.Blocks() as demo:
 				inputs=[],
 				outputs=[input_image, output_image, gray_image, gray_hist, equalized_hist]
 			)
+	
+
 
 if __name__ == '__main__':
 	demo.launch(debug=True, share=True)
