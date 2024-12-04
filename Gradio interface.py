@@ -177,7 +177,10 @@ with gr.Blocks() as demo:
 				inputs=[],
 				outputs=[input_image, output_image, gray_image, gray_hist, equalized_hist]
 			)
-	
+
+			
+			
+
 
 
 if __name__ == '__main__':
