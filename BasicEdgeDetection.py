@@ -122,7 +122,8 @@ class BasicEdgeDetection:
 
 		return edge_detection_image_result
 
-	def kirschEdgeDetectionWithDirection(self) -> tuple[np.ndarray, np.ndarray]:
+	def kirschEdgeDetectionWithDirection(self, threshold_strategy: ThresholdStrategy = ThresholdStrategy.MEAN) -> tuple[
+		np.ndarray, np.ndarray]:
 		"""
 		Applies Kirsch edge detection to a grayscale image, determining edge magnitudes and their directions.
 
@@ -167,7 +168,7 @@ class BasicEdgeDetection:
 			255 * (gradient_magnitude / np.max(gradient_magnitude)))  # Normalize the result between 0-255
 
 		t = custDynamicThreshold(gradient_magnitude,
-								 ThresholdStrategy.MEAN)  # applying the threshold strategy to apply on the image for better result # NOQA
+								 threshold_strategy)  # applying the threshold strategy to apply on the image for better result # NOQA
 
 		for i in range(gradient_magnitude.shape[0]):
 			for j in range(gradient_magnitude.shape[1]):

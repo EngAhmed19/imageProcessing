@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 from HalftoningAlgorithm import HalfToningImage
 from BasicEdgeDetection import BasicEdgeDetection
-from AdvancedEdgeDetection import AdvancedEdgeDetection, ThresholdStrategy
+from AdvancedEdgeDetection import AdvancedEdgeDetection
 from HistogramEqualization import Histogram
 
-from helperFunctions import convertImageToGray
+from helperFunctions import convertImageToGray, ThresholdStrategy
 
 
 def plot_histogram(image: np.ndarray, label: str) -> plt.Figure:
@@ -109,20 +109,64 @@ def customDirectionToString(directions: np.ndarray) -> str:
 
 
 # Callback for Basic Edge Detection
-def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothing: bool = False) -> tuple[
-	np.ndarray, np.ndarray | None, str | np.ndarray]:
+def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothing: bool,
+							   threshold_strategy_str: str) -> tuple[  # NOQA
+	np.ndarray, np.ndarray | None, str | np.ndarray]:  # NOQA
+	"""
+	Apply deffirent basic algorithm for edge detection including:
+		1- Sobel Algorithm.
+
+		2- Perwitt Algorithm.
+
+		3- Kirsch Algorithm.
+
+	After that choosing the threshold strategy you want to apply on the image.And choose to apply contrast based smoothing
+	or not.
+
+
+	:parameter:
+		:param image: The input image.
+		:type image: np.ndarray
+		:param method: Choice from deffirent algorithms like (sobel,perwitt,...,etc.)
+		:type method:str
+		:param contrast_smoothing: Whether to apply a contrast based smoothing or not.
+		:type contrast_smoothing: bool
+		:param threshold_strategy_str: which threshold strategy will be applied to the image.
+		:type threshold_strategy_str: str
+
+	:return: A tuple containing 3 outputs:
+			1- Original image in gray scale
+			2- Image after applying edge detection algorithm (sobel,perwitt,...,etc.) with the threshold strategy
+			(mean,median,...,etc.).
+			3- The direction of each pixel in the image after applying edge detection algorithm.
+	:rtype: tuple[np.ndarray, np.ndarray | None, str | np.ndarray]
+	"""
+
 	gray_image_basic_edge, edge, direction_text = None, None, ""  # NOQA
 	if image is not None:
+		threshold_strategy: ThresholdStrategy | None = None
+		if threshold_strategy_str == "Mean":
+			threshold_strategy = ThresholdStrategy.MEAN
+		elif threshold_strategy_str == "Median":
+			threshold_strategy = ThresholdStrategy.MEDIAN
+		elif threshold_strategy_str == "Standerd deviation":
+			threshold_strategy = ThresholdStrategy.STD
+		elif threshold_strategy_str == "Mean+Std":
+			threshold_strategy = ThresholdStrategy.MEAN_PLUS_STD
+		elif threshold_strategy_str == "Mean-Std":
+			threshold_strategy = ThresholdStrategy.MEAN_MINUS_STD
+		elif threshold_strategy_str == "Median+Std":
+			threshold_strategy = ThresholdStrategy.MEDIAN_PLUS_STD
 		gray_image_basic_edge: np.ndarray = convertImageToGray(image)
 		basic_detector: BasicEdgeDetection = BasicEdgeDetection(image, contrast_based_smoothing=contrast_smoothing)
 		if method == "Sobel":
-			result = basic_detector.sobelEdgeDetection()
+			result = basic_detector.sobelEdgeDetection(threshold_strategy)
 			return gray_image_basic_edge, result, ""
 		elif method == "Perwitt":
-			result = basic_detector.perwittEdgeDetection()
+			result = basic_detector.perwittEdgeDetection(threshold_strategy)
 			return gray_image_basic_edge, result, ""
 		elif method == "Kirsch":
-			edge, direction = basic_detector.kirschEdgeDetectionWithDirection()
+			edge, direction = basic_detector.kirschEdgeDetectionWithDirection(threshold_strategy)
 			direction_text: str = customDirectionToString(direction)
 			return gray_image_basic_edge, edge, direction_text
 	return gray_image_basic_edge, edge, direction_text
@@ -205,6 +249,10 @@ with gr.Blocks() as demo:
 				radio_choose_basic_edge = gr.Radio(["Sobel", "Perwitt", "Kirsch"],
 												   label="Choose The Algorithm",  # NOQA
 												   value="Sobel")  # NOQA
+				radio_threshold_strategy = gr.Radio(
+					["Mean", "Median", "Standerd deviation", "Mean+Std", "Mean-Std", "Median+Std"],
+					label="Choose The Threshold strategy",  # NOQA
+					value="Mean")  # NOQA
 				apply_contrast = gr.Checkbox(value=False, label="Apply contrast based smoothing to an image")
 				with gr.Row():
 					halftone_button = gr.Button("Apply Edge Detection")
@@ -217,14 +265,14 @@ with gr.Blocks() as demo:
 
 			halftone_button.click(
 				fn=apply_basic_edge_detection,
-				inputs=[input_image, radio_choose_basic_edge, apply_contrast],
+				inputs=[input_image, radio_choose_basic_edge, apply_contrast, radio_threshold_strategy],
 				outputs=[gray_image, output_image, direction_output]
 			)
 			clear_button.click(
-				fn=lambda: (None, None, None, "Sobel", False, None),
+				fn=lambda: (None, None, None, "Sobel", False, None, "Mean"),
 				inputs=[],
 				outputs=[input_image, output_image, gray_image, radio_choose_basic_edge, apply_contrast,
-						 direction_output]  # NOQA
+						 direction_output, radio_threshold_strategy]  # NOQA
 			)
 
 if __name__ == '__main__':
