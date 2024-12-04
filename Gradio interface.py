@@ -2,10 +2,12 @@ import gradio as gr
 import numpy as np
 import matplotlib.pyplot as plt
 
-from HalftoningAlgorithm import HalfToningImage, convertImageToGray
+from HalftoningAlgorithm import HalfToningImage
 from BasicEdgeDetection import BasicEdgeDetection
 from AdvancedEdgeDetection import AdvancedEdgeDetection, ThresholdStrategy
 from HistogramEqualization import Histogram
+
+from helperFunctions import convertImageToGray
 
 
 def plot_histogram(image: np.ndarray, label: str) -> plt.Figure:
@@ -102,13 +104,28 @@ def histogramEqualization(image: np.ndarray) -> tuple[np.ndarray, np.ndarray, pl
 	return gray_image_gradio, equalized_image_result, gray_hist_plot, equalized_hist_plot
 
 
+def customDirectionToString(directions: np.ndarray) -> str:
+	return "\n".join([" ".join(row) for row in directions])
+
+
 # Callback for Basic Edge Detection
-def apply_basic_edge_detection(image, method, contrast_smoothing):
-	basic_detector = BasicEdgeDetection(image, contrast_based_smoothing=contrast_smoothing)
-	if method == "Sobel":
-		return basic_detector.sobelEdgeDetection()
-	elif method == "Perwitt":
-		return basic_detector.perwittEdgeDetection()
+def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothing: bool = False) -> tuple[
+	np.ndarray, np.ndarray | None, str | np.ndarray]:
+	gray_image_basic_edge, edge, direction_text = None, None, ""  # NOQA
+	if image is not None:
+		gray_image_basic_edge: np.ndarray = convertImageToGray(image)
+		basic_detector: BasicEdgeDetection = BasicEdgeDetection(image, contrast_based_smoothing=contrast_smoothing)
+		if method == "Sobel":
+			result = basic_detector.sobelEdgeDetection()
+			return gray_image_basic_edge, result, ""
+		elif method == "Perwitt":
+			result = basic_detector.perwittEdgeDetection()
+			return gray_image_basic_edge, result, ""
+		elif method == "Kirsch":
+			edge, direction = basic_detector.kirschEdgeDetectionWithDirection()
+			direction_text: str = customDirectionToString(direction)
+			return gray_image_basic_edge, edge, direction_text
+	return gray_image_basic_edge, edge, direction_text
 
 
 # Callback for Advanced Edge Detection
@@ -179,6 +196,35 @@ with gr.Blocks() as demo:
 				fn=lambda: (None, None, None, None, None),
 				inputs=[],
 				outputs=[input_image, output_image, gray_image, gray_hist, equalized_hist]
+			)
+
+	with gr.Tab("Basic Edge Detection Algorithms"):
+		with gr.Row():
+			with gr.Column():
+				input_image = gr.Image(type="numpy", label="Upload Image")
+				radio_choose_basic_edge = gr.Radio(["Sobel", "Perwitt", "Kirsch"],
+												   label="Choose The Algorithm",  # NOQA
+												   value="Sobel")  # NOQA
+				apply_contrast = gr.Checkbox(value=False, label="Apply contrast based smoothing to an image")
+				with gr.Row():
+					halftone_button = gr.Button("Apply Edge Detection")
+					clear_button = gr.Button("Clear")
+
+			with gr.Column():
+				gray_image = gr.Image(type="numpy", label="Gray Image")
+				output_image = gr.Image(type="numpy", label="Edge Detection Image")
+				direction_output = gr.Textbox(label="Edge Directions", lines=10)
+
+			halftone_button.click(
+				fn=apply_basic_edge_detection,
+				inputs=[input_image, radio_choose_basic_edge, apply_contrast],
+				outputs=[gray_image, output_image, direction_output]
+			)
+			clear_button.click(
+				fn=lambda: (None, None, None, "Sobel", False, None),
+				inputs=[],
+				outputs=[input_image, output_image, gray_image, radio_choose_basic_edge, apply_contrast,
+						 direction_output]  # NOQA
 			)
 
 if __name__ == '__main__':

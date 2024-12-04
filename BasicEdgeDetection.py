@@ -18,7 +18,7 @@ class BasicEdgeDetection:
 
 	def __init__(self, image: np.ndarray, contrast_based_smoothing: bool = False):
 		self.image = image
-		if not image.any():
+		if image is None:
 			raise ValueError("The image must be specified. please provide an image")
 		else:
 			# self.gray_image = convertImageToGray(image)
@@ -57,11 +57,13 @@ class BasicEdgeDetection:
 		gy: np.ndarray = convolution(self.gray_image, mask2)
 
 		gradient_magnitude: np.ndarray = np.sqrt(gx ** 2 + gy ** 2)
-		gradient_magnitude = np.clip(gradient_magnitude, 0, 255)
+
+		gradient_magnitude = np.uint8(
+			255 * (gradient_magnitude / np.max(gradient_magnitude)))  # Normalize the result between 0-255
 
 		edge_detection_image: np.ndarray = np.zeros_like(gradient_magnitude)
 
-		t: int = custDynamicThreshold(edge_detection_image, threshold_strategy)
+		t: int = custDynamicThreshold(gradient_magnitude, threshold_strategy)
 
 		for i in range(gradient_magnitude.shape[0]):
 			for j in range(gradient_magnitude.shape[1]):
