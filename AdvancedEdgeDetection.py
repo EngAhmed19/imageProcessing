@@ -83,8 +83,27 @@ class AdvancedEdgeDetection:
        cpy_img = self.gray_image.copy()
        smoothing_kernel = np.ones((3,3)) / smoothing_factor
        return convolution(cpy_img, smoothing_kernel)
-    def differenceOfGaussians(self):
-        pass
+    def _gaussian_kernel(self, size: int, sigma: float) -> np.ndarray:
+        """Generate a Gaussian kernel."""
+        kernel = np.fromfunction(
+            lambda x, y: (1 / (2 * np.pi * sigma ** 2)) * np.exp(- ((x - (size - 1) / 2) ** 2 + (y - (size - 1) / 2) ** 2) / (2 * sigma ** 2)),
+            (size, size)
+        )
+        return kernel / np.sum(kernel)
+    def _guassian_blure(self, sigma: float, kernel_size=7) -> np.ndarray:
+        """Apply Gaussian blur to an image."""
+        cpy_img = self.gray_image.copy()
+        # must be odd
+        kernel = self._gaussian_kernel(kernel_size, sigma)
+        return convolution(cpy_img, kernel)
+
+    def differenceOfGaussians(self, sigma1: float, sigma2: float, kernel_size:int=7) -> np.ndarray:
+        """Apply the Difference of Gaussian edge detection."""
+        blurred1 = self._guassian_blure(sigma1, kernel_size=kernel_size)
+        blurred2 = self._guassian_blure(sigma2, kernel_size=kernel_size)
+        DoG = blurred1 - blurred2
+        threshold = custDynamicThreshold(image=DoG, strategy=ThresholdStrategy.MEAN_PLUS_STD)
+        return np.where(DoG > threshold, 255, 0).astype(np.uint8)
     def _varianceFunction(self, neighborhood: np.ndarray)->float:
         mean = np.mean(neighborhood)
         std = np.std(neighborhood)
