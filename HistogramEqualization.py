@@ -1,5 +1,5 @@
 import numpy as np
-from helperFunctions import calculateSumOfHist, convertImageToGray
+from helperFunctions import calculateSumOfHist, custImageToGray
 
 
 class Histogram:
@@ -18,7 +18,7 @@ class Histogram:
 			raise ValueError("The image must be specified. please provide an image")
 		else:
 			self.image = image
-			self.gray_image = convertImageToGray(image)
+			self.gray_image = custImageToGray(image)
 			self.flat_image = self.gray_image.flatten()
 
 	def getHistogram(self, bins: int = 256) -> np.ndarray:
