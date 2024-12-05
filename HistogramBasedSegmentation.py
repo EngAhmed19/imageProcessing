@@ -32,8 +32,12 @@ class HistogramBasedSegmentation:
     def contrast_enhancment(self):
         # return the equalized image
         return Histogram(self.image).histogramEqualization()[1]
+        
     def preprocess(self):
-s
+        cpy_img = self.gray_image.copy()
+        print(1)
+        cpy_img = self.noiseRedution()
+        print(2)
         # cpy_img = self.contrast_enhancment()
         # print(3)
         return cpy_img
