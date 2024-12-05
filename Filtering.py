@@ -1,5 +1,5 @@
 import numpy as np
-from helperFunctions import convolution, custImageToGray
+from helperFunctions import convolution, custImageToGray, custGenericFilter
 
 class Filtering:
     def __init__(self, image:np.ndarray):
@@ -42,5 +42,17 @@ class Filtering:
             filter = high_pass_filter
         return convolution(cpy_img, filter)
         
+    def _medianFunction(self, neighborhood: np.ndarray) -> float:
+        return np.median(neighborhood)
+    def applyMedianFilter(self, kernel_size:int = 5):
+        """
+        Applies Median Filter 
+        The median filter is considered a non-linear filter 
+        and does not fit into the typical categories of low-pass or high-pass filters that are usually associated with linear filters.
+        But it behave similary to low-pass filter.
+        Linear filters is where we apply convoltuon operation, a weighted sum calculated by a sliding window.
+        """
+        filtered_image = custGenericFilter(self.gray_image, function=self._medianFunction, kernel_size=kernel_size, padding=True)
+        return filtered_image
     
 
