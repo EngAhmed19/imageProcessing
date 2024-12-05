@@ -26,7 +26,6 @@ class Histogram:
 
 		This function get the histogram of an image.
 
-
 		:param bins:number of bins in the histogram.
 		:type bins : int
 

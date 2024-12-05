@@ -12,7 +12,7 @@ image = mplt.imread("images/logo.png")
 # Initialize the HistogramBasedSegmentation object
 segmentation = HistogramBasedSegmentation(
     image=image,
-    noise_reduction_strategy=NoiseReductionStrategy.MedianFiltering, 
+    noise_reduction_strategy=NoiseReductionStrategy.GuassianSmoothing, 
     sigma=2, kernel_size=11
 )
 
@@ -34,7 +34,7 @@ axes[0].axis('off')
 
 # Preprocessed Image
 axes[1].imshow(preprocessed_image, cmap='gray')
-axes[1].set_title("Preprocessed Image (median 11*11)")
+axes[1].set_title("Preprocessed Image")
 axes[1].axis('off')
 
 # Segmented Image
