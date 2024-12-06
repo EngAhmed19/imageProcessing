@@ -42,10 +42,10 @@ class HistogramBasedSegmentation:
         print(f"Image preprocess (1): gray image is copied")
         if active_noiseReduction:
             cpy_img = self.noiseRedution(image=cpy_img)
-            print(f"Image preprocess (2): Noise Reduction is done")
+            print(f"Image preprocess (2): Noise Reduction is applied")
         if active_contrastEnhancment:
             cpy_img = self.contrast_enhancment(image=cpy_img)
-            print(f"Image preprocess (2): Noise Reduction is done")
+            print(f"Image preprocess (3): Contrast Enhancment is applied")
         return cpy_img
     def manual_histogram_segmentation(self, lower_threshold: int, upper_threshold: int, region_grouping: bool = False):
         segmented_img = np.zeros_like(self.gray_image)
@@ -58,6 +58,32 @@ class HistogramBasedSegmentation:
             return segmented_img, labeled_image
         else:
             return segmented_img
+        
+    def _find_peaks(self, histogram: np.ndarray, peaks_min_distance:int =10):
+        peaks = []
+        for i in range(1, len(histogram)-1):
+            # larger than the one before it and the one after it.
+            if histogram[i] > histogram[i-1] and histogram[i] > histogram[i+1]:
+                # Applying peak spacing
+                if len(peaks) == 0 or i - peaks[-1] > peaks_min_distance:
+                    peaks.append(i)
+        return peaks
+    
+    def peak_histogram_segmentation(self, peaks_min_distance:int =10):
+        histogram = Histogram(self.gray_image).getHistogram()
+        # Find the peaks
+        peaks = self._find_peaks(histogram=histogram, peaks_min_distance=peaks_min_distance)
+
+        if len(peaks) < 2:
+            raise ValueError("❌Not enough peaks found for segmentation.❌")
+        
+        # sort peaks based on their height (frequency)
+        # False will sort ascending, True will sort descending. Default is False
+        sorted_peaks = sorted(peaks, key=lambda x: histogram[x], reverse=True)
+        peak_1, peak_2 = sorted_peaks[0], sorted_peaks[1]
+        return self.manual_histogram_segmentation(lower_threshold=peak_1, upper_threshold=peak_2)
+
+
 
 
 
