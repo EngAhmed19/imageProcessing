@@ -248,6 +248,27 @@ def apply_advanced_edge_detection(image, method, kernel_size: int, threshold_str
 
 
 def applyFiltering(image: np.ndarray, method: str, kernel_size: int = 5) -> tuple[np.ndarray, np.ndarray]:
+	"""
+	Apply deffirent filtering algorithms including:
+		1- High Pass Filter.
+
+		2- Low Pass Filter.
+
+		3- Median Filter.
+
+	:parameter:
+		:param image: The input image.
+		:type image: np.ndarray
+		:param method: choose between deffirent filters like (High pass filter,Low Pass Filter,...,etc.).
+		:type method: str
+		:param kernel_size: he size of the square kernel to use for calculating local variance. Default is 5.
+		:type kernel_size: int.
+
+	:returns: A tuple containing 2 outputs:
+			1- Original image in gray scale
+			2- Image after applying filter algorithm on it (High pass filter,Low Pass Filter,...,etc.).
+	:rtype: tuple[np.ndarray, np.ndarray]
+	"""
 	if image is not None:
 		gray_image_filter: np.ndarray = convertImageToGray(image)
 		filtering = Filtering(image)
@@ -260,6 +281,25 @@ def applyFiltering(image: np.ndarray, method: str, kernel_size: int = 5) -> tupl
 
 
 def applyImageOperation(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.ndarray]:
+	"""
+	Apply deffirent Operation on Image including:
+		1- Addition
+
+		2- Subtraction.
+
+		3- Inversion.
+
+	:parameter:
+		:param image: The input image.
+		:type image: np.ndarray
+		:param choice: choose between deffirent operations like (Addition,Subtraction,...,etc.).
+		:type choice: str
+
+	:returns: A tuple containing 2 outputs:
+			1- Original image in gray scale
+			2- Image after applying operation on it (Addition,Subtraction,...,etc.).
+	:rtype: tuple[np.ndarray, np.ndarray]
+	"""
 	if image is not None:
 		gray_image_operation: np.ndarray = convertImageToGray(image)
 		operator = ImageOperation(image)
