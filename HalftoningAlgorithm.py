@@ -14,7 +14,7 @@ class HalfToningImage:
 	"""
 
 	def __init__(self, image: np.ndarray):
-		if image is None:
+		if image is None or not isinstance(image, np.ndarray):
 			raise ValueError("The image must be specified. please provide an image")
 		else:
 			self.image = image

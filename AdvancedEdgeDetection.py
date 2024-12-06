@@ -3,14 +3,22 @@ from helperFunctions import custImageToGray, convolution, custGenericFilter, Thr
 
 
 class AdvancedEdgeDetection:
+	"""
+	Perform advanced edge detection on the image (homogeneity,DOG,...,etc.)
+
+	:parameter:
+		:param image: The input image.
+		:type image: np.ndarray.
+
+	:raises ValueError: The image must be specified. please provide an image.
+	"""
+
 	def __init__(self, image: np.ndarray):
-		if not image.any():
+		if image is None or not isinstance(image, np.ndarray):
 			raise ValueError("The image must be specified. please provide an image")
 		else:
 			self.image = image
 			self.gray_image = custImageToGray(image)
-
-	# self.gray_image = convertImageToGray(image)
 
 	def _homogeneityFunction(self, neighborhood: np.ndarray) -> float:  # NOQA
 		"""
@@ -90,10 +98,15 @@ class AdvancedEdgeDetection:
 		# print(f"Edge map in the class  {edge_map.shape}")
 		return edge_map
 
-	def contrastBaseSmoothing(self, smoothing_factor: float = (1 / 9)):
+	def contrastBaseSmoothing(self, threshold_strategy: ThresholdStrategy, smoothing_factor: float = (1 / 9)):
 		cpy_img = self.gray_image.copy()
 		smoothing_kernel = np.ones((3, 3)) / smoothing_factor
-		return convolution(cpy_img, smoothing_kernel)
+		contrast_based_smoothing_edge: np.ndarray = convolution(cpy_img, smoothing_kernel)
+		# Normalize image between 0:255
+		contrast_based_smoothing_edge = np.uint8(
+			255 * (contrast_based_smoothing_edge / np.max(contrast_based_smoothing_edge)))
+		threshold: float = custDynamicThreshold(self.gray_image, threshold_strategy)
+		return (contrast_based_smoothing_edge > threshold).astype(np.uint8) * 255
 
 	def _gaussian_kernel(self, size: int, sigma: float) -> np.ndarray:  # NOQA
 		"""Generate a Gaussian kernel."""

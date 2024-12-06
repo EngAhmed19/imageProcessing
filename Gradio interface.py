@@ -173,20 +173,41 @@ def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothin
 
 
 # Callback for Advanced Edge Detection
-def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy: ThresholdStrategy, sigma1, sigma2):
-	advanced_detector = AdvancedEdgeDetection(image)
-	strategy = threshold_strategy
+def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy_str: str, sigma1,
+								  sigma2) -> tuple[np.ndarray, np.ndarray]:  # NOQA
+	if image is not None:
+		threshold_strategy: ThresholdStrategy = ThresholdStrategy.MEAN
+		if threshold_strategy_str == "Mean":
+			threshold_strategy = ThresholdStrategy.MEAN
+		elif threshold_strategy_str == "Median":
+			threshold_strategy = ThresholdStrategy.MEDIAN
+		elif threshold_strategy_str == "Standerd deviation":
+			threshold_strategy = ThresholdStrategy.STD
+		elif threshold_strategy_str == "Mean+Std":
+			threshold_strategy = ThresholdStrategy.MEAN_PLUS_STD
+		elif threshold_strategy_str == "Mean-Std":
+			threshold_strategy = ThresholdStrategy.MEAN_MINUS_STD
+		elif threshold_strategy_str == "Median+Std":
+			threshold_strategy = ThresholdStrategy.MEDIAN_PLUS_STD
 
-	if method == "Homogeneity":
-		return advanced_detector.homogeneityOperator(area_size=kernel_size, strategy=strategy)
-	elif method == "Difference":
-		return advanced_detector.differenceOperator(strategy=strategy)
-	elif method == "Variance":
-		return advanced_detector.varianceEdgeDetector(kernel_size=kernel_size, strategy=strategy)
-	elif method == "Range":
-		return advanced_detector.rangeEdgeDetector(kernel_size=kernel_size, strategy=strategy)
-	elif method == "Difference of Gaussians":
-		return advanced_detector.differenceOfGaussians(sigma1=sigma1, sigma2=sigma2)
+		advanced_detector = AdvancedEdgeDetection(image)
+		gray_image_Advance_edge: np.ndarray = convertImageToGray(image)
+		if method == "Homogeneity":
+			return gray_image_Advance_edge, advanced_detector.homogeneityOperator(area_size=kernel_size,
+																				  strategy=threshold_strategy)  # NOQA
+		elif method == "Difference":
+			return gray_image_Advance_edge, advanced_detector.differenceOperator(strategy=threshold_strategy)
+		elif method == "Variance":
+			return gray_image_Advance_edge, advanced_detector.varianceEdgeDetector(kernel_size=kernel_size,
+																				   strategy=threshold_strategy)  # NOQA
+		elif method == "Range":
+			return gray_image_Advance_edge, advanced_detector.rangeEdgeDetector(kernel_size=kernel_size,
+																				strategy=threshold_strategy)  # NOQA
+		elif method == "Difference of Gaussians":
+			return gray_image_Advance_edge, advanced_detector.differenceOfGaussians(sigma1=sigma1, sigma2=sigma2)
+		elif method == "Contrast based smoothing":
+			return gray_image_Advance_edge, advanced_detector.contrastBaseSmoothing(threshold_strategy,
+																					smoothing_factor=1 / 9)  # NOQA
 
 
 with gr.Blocks() as demo:
@@ -203,43 +224,43 @@ with gr.Blocks() as demo:
 
 			with gr.Column():
 				gray_image = gr.Image(type="numpy", label="Gray Image")
-				output_image = gr.Image(type="numpy", label="Halftoned Image")
+				output_image_halftone = gr.Image(type="numpy", label="Halftoned Image")
 
 			halftone_button.click(
 				fn=simpleHalfToningAlgorithm,
 				inputs=[input_image, radio_choose],
-				outputs=[gray_image, output_image]
+				outputs=[gray_image, output_image_halftone]
 			)
 			clear_button.click(
 				fn=lambda: (None, None, None, "Simple Halftoning"),
 				inputs=[],
-				outputs=[input_image, output_image, gray_image, radio_choose]
+				outputs=[input_image, output_image_halftone, gray_image, radio_choose]
 			)
 	with gr.Tab("Histogram Equalization"):
 		with gr.Row():
 			with gr.Column():
 				input_image = gr.Image(type="numpy", label="Upload Image")
 				with gr.Row():
-					halftone_button = gr.Button("Apply Histogram Equalization")
+					histogram_button = gr.Button("Apply Histogram Equalization")
 					clear_button = gr.Button("Clear")
 
 			with gr.Column():
 				gray_image = gr.Image(type="numpy", label="Gray Image")
-				output_image = gr.Image(type="numpy", label="Equalized Image")
+				output_image_equalization = gr.Image(type="numpy", label="Equalized Image")
 
 			with gr.Column():
 				gray_hist = gr.Plot(label="Gray Image Histogram")
 				equalized_hist = gr.Plot(label="Equalized Image Histogram")
 
-			halftone_button.click(
+			histogram_button.click(
 				fn=histogramEqualization,
 				inputs=[input_image],
-				outputs=[gray_image, output_image, gray_hist, equalized_hist]
+				outputs=[gray_image, output_image_equalization, gray_hist, equalized_hist]
 			)
 			clear_button.click(
 				fn=lambda: (None, None, None, None, None),
 				inputs=[],
-				outputs=[input_image, output_image, gray_image, gray_hist, equalized_hist]
+				outputs=[input_image, output_image_equalization, gray_image, gray_hist, equalized_hist]
 			)
 
 	with gr.Tab("Basic Edge Detection Algorithms"):
@@ -255,24 +276,61 @@ with gr.Blocks() as demo:
 					value="Mean")  # NOQA
 				apply_contrast = gr.Checkbox(value=False, label="Apply contrast based smoothing to an image")
 				with gr.Row():
-					halftone_button = gr.Button("Apply Edge Detection")
+					basic_edge_button = gr.Button("Apply Edge Detection")
 					clear_button = gr.Button("Clear")
 
 			with gr.Column():
 				gray_image = gr.Image(type="numpy", label="Gray Image")
-				output_image = gr.Image(type="numpy", label="Edge Detection Image")
+				output_image_edge = gr.Image(type="numpy", label="Edge Detection Image")
 				direction_output = gr.Textbox(label="Edge Directions", lines=10)
 
-			halftone_button.click(
+			basic_edge_button.click(
 				fn=apply_basic_edge_detection,
 				inputs=[input_image, radio_choose_basic_edge, apply_contrast, radio_threshold_strategy],
-				outputs=[gray_image, output_image, direction_output]
+				outputs=[gray_image, output_image_edge, direction_output]
 			)
 			clear_button.click(
 				fn=lambda: (None, None, None, "Sobel", False, None, "Mean"),
 				inputs=[],
-				outputs=[input_image, output_image, gray_image, radio_choose_basic_edge, apply_contrast,
+				outputs=[input_image, output_image_edge, gray_image, radio_choose_basic_edge, apply_contrast,
 						 direction_output, radio_threshold_strategy]  # NOQA
+			)
+
+	with gr.Tab("Advanced Edge Detection Algorithms"):
+		with gr.Row():
+			with gr.Column():
+				input_image = gr.Image(type="numpy", label="Upload Image")
+				radio_choose_advanced_edge = gr.Radio(
+					["Homogeneity", "Difference", "Variance", "Range", "Difference of Gaussians",
+					 "Contrast based smoothing"],  # NOQA
+					label="Choose The Algorithm",  # NOQA
+					value="Homogeneity")  # NOQA
+				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=3, step=2)
+				sigma1_gradio = gr.Number(label="Enter sigma1")
+				sigma2_gradio = gr.Number(label="Enter sigma2")
+				radio_threshold_strategy = gr.Radio(
+					["Mean", "Median", "Standerd deviation", "Mean+Std", "Mean-Std", "Median+Std"],
+					label="Choose The Threshold strategy",  # NOQA
+					value="Mean")  # NOQA
+				with gr.Row():
+					edge_detection_button = gr.Button("Apply Edge Detection")
+					clear_button = gr.Button("Clear")
+
+			with gr.Column():
+				gray_image = gr.Image(type="numpy", label="Gray Image")
+				output_image_edge_advance = gr.Image(type="numpy", label="Edge Detection Image")
+
+			edge_detection_button.click(
+				fn=apply_advanced_edge_detection,
+				inputs=[input_image, radio_choose_advanced_edge, kernel_size_gradio, radio_threshold_strategy,
+						sigma1_gradio, sigma2_gradio],  # NOQA
+				outputs=[gray_image, output_image_edge_advance]
+			)
+			clear_button.click(
+				fn=lambda: (None, None, None, "Homogeneity", "Mean"),
+				inputs=[],
+				outputs=[input_image, output_image_edge_advance, gray_image, radio_choose_basic_edge,
+						 radio_threshold_strategy]  # NOQA
 			)
 
 if __name__ == '__main__':
