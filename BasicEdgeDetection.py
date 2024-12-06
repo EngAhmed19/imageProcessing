@@ -57,12 +57,10 @@ class BasicEdgeDetection:
 		gy: np.ndarray = convolution(self.gray_image, mask2)
 
 		gradient_magnitude: np.ndarray = np.sqrt(gx ** 2 + gy ** 2)
-		print(gradient_magnitude)
 
 		gradient_magnitude = np.uint8(
 			255 * (gradient_magnitude / np.max(gradient_magnitude)))  # Normalize the result between 0-255
 
-		print(gradient_magnitude)
 
 		edge_detection_image: np.ndarray = np.zeros_like(gradient_magnitude)
 

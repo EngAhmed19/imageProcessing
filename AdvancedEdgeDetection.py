@@ -54,11 +54,8 @@ class AdvancedEdgeDetection:
 			# strategy is Enum
 			threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
 
-		print(f"threshold {threshold}")
 		# Convert to 0 or 255 (binary image)
 		edge_map = (filtered_image > threshold).astype(np.uint8) * 255
-		# print(f"Filtered image in the class  {filtered_image.shape}")
-		# print(f"Edge map in the class  {edge_map.shape}")
 		return edge_map
 
 	def _differenceFunction(self, neighborhood: np.ndarray) -> float:  # NOQA
@@ -91,11 +88,8 @@ class AdvancedEdgeDetection:
 			# strategy is Enum
 			threshold = custDynamicThreshold(image=filtered_image, strategy=strategy)
 
-		print(f"threshold {threshold}")
 		# Convert to 0 or 255 (binary image)
 		edge_map = (filtered_image > threshold).astype(np.uint8) * 255
-		# print(f"Filtered image in the class  {filtered_image.shape}")
-		# print(f"Edge map in the class  {edge_map.shape}")
 		return edge_map
 
 	def contrastBaseSmoothing(self, threshold_strategy: ThresholdStrategy, smoothing_factor: float = (1 / 9)):

@@ -6,6 +6,7 @@ from HalftoningAlgorithm import HalfToningImage
 from BasicEdgeDetection import BasicEdgeDetection
 from AdvancedEdgeDetection import AdvancedEdgeDetection
 from HistogramEqualization import Histogram
+from Filtering import Filtering
 
 from helperFunctions import convertImageToGray, ThresholdStrategy
 
@@ -183,7 +184,7 @@ def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothin
 
 
 # Callback for Advanced Edge Detection
-def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy_str: str, sigma1,
+def apply_advanced_edge_detection(image, method, kernel_size: int, threshold_strategy_str: str, sigma1,
 								  sigma2) -> tuple[np.ndarray, np.ndarray]:  # NOQA
 	"""
 	Apply deffirent Advanced algorithm for edge detection including:
@@ -243,6 +244,18 @@ def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy
 		elif method == "Contrast based smoothing":
 			return gray_image_Advance_edge, advanced_detector.contrastBaseSmoothing(threshold_strategy,
 																					smoothing_factor=1 / 9)  # NOQA
+
+
+def applyFiltering(image: np.ndarray, method: str, kernel_size: int = 5) -> tuple[np.ndarray, np.ndarray]:
+	if image is not None:
+		gray_image_filter: np.ndarray = convertImageToGray(image)
+		filtering = Filtering(image)
+		if method == "High Pass Filter":
+			return gray_image_filter, filtering.applyHighPassFilter()
+		elif method == "Low Pass Filter":
+			return gray_image_filter, filtering.applyLowPassFilter()
+		elif method == "Median Filter":
+			return gray_image_filter, filtering.applyMedianFilter(kernel_size=kernel_size)
 
 
 with gr.Blocks() as demo:
@@ -366,10 +379,36 @@ with gr.Blocks() as demo:
 				outputs=[gray_image, output_image_edge_advance]
 			)
 			clear_button.click(
-				fn=lambda: (None, None, None, "Homogeneity", "Mean"),
+				fn=lambda: (None, None, None, "Homogeneity", "Mean", 3),
 				inputs=[],
 				outputs=[input_image, output_image_edge_advance, gray_image, radio_choose_basic_edge,
-						 radio_threshold_strategy]  # NOQA
+						 radio_threshold_strategy, kernel_size_gradio]  # NOQA
+			)
+	with gr.Tab("Filtering Algorithms"):
+		with gr.Row():
+			with gr.Column():
+				input_image = gr.Image(type="numpy", label="Upload Image")
+				radio_choose = gr.Radio(["High Pass Filter", "Low Pass Filter", "Median Filter"],
+										label="Choose The Type Of Filter",
+										value="High Pass Filter")  # NOQA
+				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=5, step=2, label="Kernel Size")
+				with gr.Row():
+					filtering_button = gr.Button("Apply Filter")
+					clear_button = gr.Button("Clear")
+
+			with gr.Column():
+				gray_image = gr.Image(type="numpy", label="Gray Image")
+				output_image_filtering = gr.Image(type="numpy", label="Filtered Image")
+
+			filtering_button.click(
+				fn=applyFiltering,
+				inputs=[input_image, radio_choose, kernel_size_gradio],
+				outputs=[gray_image, output_image_filtering]
+			)
+			clear_button.click(
+				fn=lambda: (None, None, None, "High Pass Filter", 5),
+				inputs=[],
+				outputs=[input_image, output_image_filtering, gray_image, radio_choose, kernel_size_gradio]
 			)
 
 if __name__ == '__main__':
