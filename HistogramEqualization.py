@@ -18,7 +18,7 @@ class Histogram:
 			raise ValueError("The image must be specified. please provide an image")
 		else:
 			self.image = image
-			self.gray_image = convertImageToGray(self.image)
+			self.gray_image = custImageToGray(self.image)
 			self.flat_image = self.gray_image.flatten()
 
 	def getHistogram(self, bins: int = 256) -> np.ndarray:

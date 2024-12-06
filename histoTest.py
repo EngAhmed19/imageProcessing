@@ -5,9 +5,13 @@ import matplotlib.image as mplt
 from helperFunctions import custDynamicThreshold, ThresholdStrategy
 
 from HistogramBasedSegmentation import HistogramBasedSegmentation, NoiseReductionStrategy
+from helperFunctions import custImageToGray
 
-# Load or generate a test image (for example, a random image or one from a file)
+# # Load or generate a test image (for example, a random image or one from a file)
 image = mplt.imread("images/logo.png")
+# image2 = mplt.imread("images/nature.jpg")
+# print(f"image shape {image.shape}, min {image.min()}, max {image.max()}")
+# print(f"image2 shape {image2.shape}, min {image2.min()}, max {image2.max()}")
 
 # Initialize the HistogramBasedSegmentation object
 segmentation = HistogramBasedSegmentation(
@@ -17,7 +21,7 @@ segmentation = HistogramBasedSegmentation(
 )
 
 # Preprocess the image (apply noise reduction and contrast enhancement)
-preprocessed_image = segmentation.preprocess()
+preprocessed_image = segmentation.preprocess(active_contrastEnhancment=True, active_noiseReduction=True)
 
 # Apply manual histogram segmentation with chosen thresholds
 lower_threshold = custDynamicThreshold(preprocessed_image, strategy=ThresholdStrategy.MEAN_MINUS_STD)

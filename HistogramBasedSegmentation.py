@@ -22,24 +22,30 @@ class HistogramBasedSegmentation:
             self.noise_reduction_strategy = noise_reduction_strategy
             self.sigma = sigma
             self.kernel_size = kernel_size
-    def noiseRedution(self):
+    def noiseRedution(self, image:np.ndarray=None):
+        if image is None:
+            image = self.image
         if self.noise_reduction_strategy == NoiseReductionStrategy.MedianFiltering:
-            filter = Filtering(image=self.image)
+            filter = Filtering(image)
             return filter.applyMedianFilter(kernel_size=self.kernel_size)
         elif self.noise_reduction_strategy == NoiseReductionStrategy.GuassianSmoothing:
-            filter = AdvancedEdgeDetection(image=self.image)
+            filter = AdvancedEdgeDetection(image)
             return filter._guassian_blure(sigma=self.sigma)
-    def contrast_enhancment(self):
+    def contrast_enhancment(self, image:np.ndarray=None):
+        if image is None:
+            image = self.image
         # return the equalized image
-        return Histogram(self.image).histogramEqualization()[1]
+        return Histogram(image).histogramEqualization()[1]
         
-    def preprocess(self):
+    def preprocess(self, active_noiseReduction=False, active_contrastEnhancment=False):
         cpy_img = self.gray_image.copy()
-        print(1)
-        cpy_img = self.noiseRedution()
-        print(2)
-        # cpy_img = self.contrast_enhancment()
-        # print(3)
+        print(f"Image preprocess (1): gray image is copied")
+        if active_noiseReduction:
+            cpy_img = self.noiseRedution(image=cpy_img)
+            print(f"Image preprocess (2): Noise Reduction is done")
+        if active_contrastEnhancment:
+            cpy_img = self.contrast_enhancment(image=cpy_img)
+            print(f"Image preprocess (2): Noise Reduction is done")
         return cpy_img
     def manual_histogram_segmentation(self, lower_threshold: int, upper_threshold: int, region_grouping: bool = False):
         segmented_img = np.zeros_like(self.gray_image)

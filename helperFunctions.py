@@ -26,8 +26,18 @@ def custImageToGray(image: np.ndarray) -> np.ndarray:
 	"""
 	# this is a binary image
 	if len(image.shape) < 3:
-		return image
-	return np.dot(image[:, :, :3], [0.2989, 0.5870, 0.1140])
+		# return image
+		# if pixels intensity between 0.0 and 1.0
+		# scale it up by image * 255
+		# convert them to integers be astype(np.unit8)
+		# np.clip(image, 0, 255).astype(np.uint8)
+		# ensure the range
+		return (image * 255).astype(np.uint8) if image.max() <= 1 else np.clip(image, 0, 255).astype(np.uint8)
+	
+	# main functionality 
+	gray_image = np.dot(image[:, :, :3], [0.2989, 0.5870, 0.1140])
+
+	return (gray_image*255).astype(np.uint8) if gray_image.max() <= 1 else np.clip(gray_image, 0, 255).astype(np.uint8)
 
 
 def calculateSumOfHist(histogram: np.ndarray) -> np.ndarray:
