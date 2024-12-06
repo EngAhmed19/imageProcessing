@@ -1,5 +1,5 @@
 import numpy as np
-from helperFunctions import convertImageToGray
+from helperFunctions import convertImageToGray, custDynamicThreshold, ThresholdStrategy
 
 
 class HalfToningImage:
@@ -20,7 +20,7 @@ class HalfToningImage:
 			self.image = image
 			self.gray_image = convertImageToGray(image)
 
-	def simpleHalftoning(self) -> np.ndarray:
+	def simpleHalftoning(self, threshold_strategy: ThresholdStrategy = ThresholdStrategy.MEAN) -> np.ndarray:
 		"""
 		Apply simple halftoning algorithm on the image.
 
@@ -31,15 +31,17 @@ class HalfToningImage:
 
 		row, column = self.gray_image.shape
 
+		t: float = custDynamicThreshold(self.gray_image, threshold_strategy)
+
 		for i in range(row):
 			for j in range(column):
-				if self.gray_image[i, j] > 127:
+				if self.gray_image[i, j] > t:
 					half_toning_image[i, j] = 255
 				else:
 					half_toning_image[i, j] = 0
 		return half_toning_image
 
-	def errorDiffusionHalfToning(self) -> np.ndarray:
+	def errorDiffusionHalfToning(self, threshold_strategy: ThresholdStrategy = ThresholdStrategy.MEAN) -> np.ndarray:
 		"""
 		Applying error diffusion algorithm on the image.
 		:return: The image after applying error diffusion halftoning algorithm.
@@ -51,10 +53,12 @@ class HalfToningImage:
 
 		row, column = gray_image.shape
 
+		t: float = custDynamicThreshold(self.gray_image, threshold_strategy)
+
 		for i in range(row):
 			for j in range(column):
 				pixel_old = gray_image[i, j]
-				if gray_image[i, j] > 127:
+				if gray_image[i, j] > t:
 					half_toning_image[i, j] = 255
 				else:
 					half_toning_image[i, j] = 0

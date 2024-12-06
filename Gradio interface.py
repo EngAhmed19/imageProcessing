@@ -10,6 +10,24 @@ from HistogramEqualization import Histogram
 from helperFunctions import convertImageToGray, ThresholdStrategy
 
 
+def select_threshold_strategy(threshold_strategy_str: str) -> ThresholdStrategy:
+	threshold_strategy: ThresholdStrategy | None = None
+	if threshold_strategy_str == "Mean":
+		threshold_strategy = ThresholdStrategy.MEAN
+	elif threshold_strategy_str == "Median":
+		threshold_strategy = ThresholdStrategy.MEDIAN
+	elif threshold_strategy_str == "Standerd deviation":
+		threshold_strategy = ThresholdStrategy.STD
+	elif threshold_strategy_str == "Mean+Std":
+		threshold_strategy = ThresholdStrategy.MEAN_PLUS_STD
+	elif threshold_strategy_str == "Mean-Std":
+		threshold_strategy = ThresholdStrategy.MEAN_MINUS_STD
+	elif threshold_strategy_str == "Median+Std":
+		threshold_strategy = ThresholdStrategy.MEDIAN_PLUS_STD
+
+	return threshold_strategy
+
+
 def plot_histogram(image: np.ndarray, label: str) -> plt.Figure:
 	"""
 	This function show the histogram of the image in the gradio interface.
@@ -25,7 +43,8 @@ def plot_histogram(image: np.ndarray, label: str) -> plt.Figure:
 	return fig
 
 
-def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.ndarray]:
+def simpleHalfToningAlgorithm(image: np.ndarray, choice: str, threshold_strategy_str: str) -> tuple[
+	np.ndarray, np.ndarray]:
 	"""
 	Apply a halftoning algorithm to an image based on the selected choice. This function supports two types of halftoning
 	algorithms:
@@ -36,14 +55,16 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarra
 	The function converts the input image to grayscale before applying the halftoning algorithm.
 	The result is normalized to the range [0, 1].
 
-	:param image:The input image as a NumPy array. Must be a valid image array.
-	:type image: np.ndarray
-
-	:param choice:
-		The choice of halftoning algorithm to apply. Options are:
-		- "Simple Halftoning"
-		- "Error Diffusion Halftoning"
-	:type choice: str
+	:parameter:
+		:param image:The input image as a NumPy array. Must be a valid image array.
+		:type image: np.ndarray
+		:param choice:
+			The choice of halftoning algorithm to apply. Options are:
+			- "Simple Halftoning"
+			- "Error Diffusion Halftoning"
+		:type choice: str
+		:param threshold_strategy_str: which threshold strategy will be applied to the image.
+		:type threshold_strategy_str:str
 
 	:return:
 		A tuple containing:
@@ -57,6 +78,7 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarra
 
 
 	"""
+	threshold_strategy = select_threshold_strategy(threshold_strategy_str)
 	result, gray_image_fn = None, None  # NOQA
 	if image is not None:
 		gray_image_fn = convertImageToGray(image)
@@ -64,12 +86,12 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str) -> tuple[np.ndarra
 		result: np.ndarray = np.zeros(image.shape)
 		half_toning_image = HalfToningImage(image)
 		if choice == "Simple Halftoning":
-			result = half_toning_image.simpleHalftoning()
+			result = half_toning_image.simpleHalftoning(threshold_strategy)
 
 			result /= 255
 
 		elif choice == "Error Diffusion Halftoning":
-			result = half_toning_image.errorDiffusionHalfToning()
+			result = half_toning_image.errorDiffusionHalfToning(threshold_strategy)
 			result /= 255
 
 	return gray_image_fn, result
@@ -144,19 +166,7 @@ def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothin
 
 	gray_image_basic_edge, edge, direction_text = None, None, ""  # NOQA
 	if image is not None:
-		threshold_strategy: ThresholdStrategy | None = None
-		if threshold_strategy_str == "Mean":
-			threshold_strategy = ThresholdStrategy.MEAN
-		elif threshold_strategy_str == "Median":
-			threshold_strategy = ThresholdStrategy.MEDIAN
-		elif threshold_strategy_str == "Standerd deviation":
-			threshold_strategy = ThresholdStrategy.STD
-		elif threshold_strategy_str == "Mean+Std":
-			threshold_strategy = ThresholdStrategy.MEAN_PLUS_STD
-		elif threshold_strategy_str == "Mean-Std":
-			threshold_strategy = ThresholdStrategy.MEAN_MINUS_STD
-		elif threshold_strategy_str == "Median+Std":
-			threshold_strategy = ThresholdStrategy.MEDIAN_PLUS_STD
+		threshold_strategy: ThresholdStrategy = select_threshold_strategy(threshold_strategy_str)
 		gray_image_basic_edge: np.ndarray = convertImageToGray(image)
 		basic_detector: BasicEdgeDetection = BasicEdgeDetection(image, contrast_based_smoothing=contrast_smoothing)
 		if method == "Sobel":
@@ -175,21 +185,44 @@ def apply_basic_edge_detection(image: np.ndarray, method: str, contrast_smoothin
 # Callback for Advanced Edge Detection
 def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy_str: str, sigma1,
 								  sigma2) -> tuple[np.ndarray, np.ndarray]:  # NOQA
-	if image is not None:
-		threshold_strategy: ThresholdStrategy = ThresholdStrategy.MEAN
-		if threshold_strategy_str == "Mean":
-			threshold_strategy = ThresholdStrategy.MEAN
-		elif threshold_strategy_str == "Median":
-			threshold_strategy = ThresholdStrategy.MEDIAN
-		elif threshold_strategy_str == "Standerd deviation":
-			threshold_strategy = ThresholdStrategy.STD
-		elif threshold_strategy_str == "Mean+Std":
-			threshold_strategy = ThresholdStrategy.MEAN_PLUS_STD
-		elif threshold_strategy_str == "Mean-Std":
-			threshold_strategy = ThresholdStrategy.MEAN_MINUS_STD
-		elif threshold_strategy_str == "Median+Std":
-			threshold_strategy = ThresholdStrategy.MEDIAN_PLUS_STD
+	"""
+	Apply deffirent Advanced algorithm for edge detection including:
+		1- Homogeneity Algorithm.
 
+		2- Difference Algorithm.
+
+		3- Variance Algorithm.
+
+		4- Range Algorithm.
+
+		5- Difference of Gaussians Algorithm.
+
+		6- Contrast based smoothing Algorithm.
+
+	After that choosing the threshold strategy you want to apply on the image.
+
+	:parameter:
+		:param image: The input image.
+		:type image: np.ndarray
+		:param method: The choice between deffirent algorithms (Homogeneity,Range,...,etc.).
+		:type method: str
+		:param kernel_size: The size of the square kernel to use for calculating local variance. Default is 3.
+		:type kernel_size: int
+		:param threshold_strategy_str: which threshold strategy will be applied to the image.
+		:type threshold_strategy_str: str
+		:param sigma1: The first sigma to apply.
+		:type sigma1: float
+		:param sigma2: The second sigma to apply.
+		:type sigma2:float
+
+	:returns: A tuple containing 2 outputs:
+			1- Original image in gray scale
+			2- Image after applying advanced edge detection algorithm (Homogeneity,Range,...,etc.) with the threshold strategy
+			(mean,median,...,etc.).
+	:rtype: tuple[np.ndarray, np.ndarray].
+	"""
+	if image is not None:
+		threshold_strategy: ThresholdStrategy = select_threshold_strategy(threshold_strategy_str)
 		advanced_detector = AdvancedEdgeDetection(image)
 		gray_image_Advance_edge: np.ndarray = convertImageToGray(image)
 		if method == "Homogeneity":
@@ -204,7 +237,9 @@ def apply_advanced_edge_detection(image, method, kernel_size, threshold_strategy
 			return gray_image_Advance_edge, advanced_detector.rangeEdgeDetector(kernel_size=kernel_size,
 																				strategy=threshold_strategy)  # NOQA
 		elif method == "Difference of Gaussians":
-			return gray_image_Advance_edge, advanced_detector.differenceOfGaussians(sigma1=sigma1, sigma2=sigma2)
+			return gray_image_Advance_edge, advanced_detector.differenceOfGaussians(sigma1=sigma1, sigma2=sigma2,
+																					kernel_size=kernel_size,  # NOQA
+																					threshold_strategy=threshold_strategy)  # NOQA
 		elif method == "Contrast based smoothing":
 			return gray_image_Advance_edge, advanced_detector.contrastBaseSmoothing(threshold_strategy,
 																					smoothing_factor=1 / 9)  # NOQA
@@ -218,6 +253,10 @@ with gr.Blocks() as demo:
 				radio_choose = gr.Radio(["Simple Halftoning", "Error Diffusion Halftoning"],
 										label="Choose The Algorithm",
 										value="Simple Halftoning")  # NOQA
+				radio_threshold_strategy = gr.Radio(
+					["Mean", "Median", "Standerd deviation", "Mean+Std", "Mean-Std", "Median+Std"],
+					label="Choose The Threshold strategy",  # NOQA
+					value="Mean")  # NOQA
 				with gr.Row():
 					halftone_button = gr.Button("Apply Halftoning")
 					clear_button = gr.Button("Clear")
@@ -228,13 +267,13 @@ with gr.Blocks() as demo:
 
 			halftone_button.click(
 				fn=simpleHalfToningAlgorithm,
-				inputs=[input_image, radio_choose],
+				inputs=[input_image, radio_choose, radio_threshold_strategy],
 				outputs=[gray_image, output_image_halftone]
 			)
 			clear_button.click(
-				fn=lambda: (None, None, None, "Simple Halftoning"),
+				fn=lambda: (None, None, None, "Simple Halftoning", "Mean"),
 				inputs=[],
-				outputs=[input_image, output_image_halftone, gray_image, radio_choose]
+				outputs=[input_image, output_image_halftone, gray_image, radio_choose, radio_threshold_strategy]
 			)
 	with gr.Tab("Histogram Equalization"):
 		with gr.Row():
@@ -305,7 +344,7 @@ with gr.Blocks() as demo:
 					 "Contrast based smoothing"],  # NOQA
 					label="Choose The Algorithm",  # NOQA
 					value="Homogeneity")  # NOQA
-				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=3, step=2)
+				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=3, step=2, label="Kernel Size")
 				sigma1_gradio = gr.Number(label="Enter sigma1")
 				sigma2_gradio = gr.Number(label="Enter sigma2")
 				radio_threshold_strategy = gr.Radio(

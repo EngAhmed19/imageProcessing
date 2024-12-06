@@ -124,12 +124,13 @@ class AdvancedEdgeDetection:
 		kernel = self._gaussian_kernel(kernel_size, sigma)
 		return convolution(cpy_img, kernel)
 
-	def differenceOfGaussians(self, sigma1: float, sigma2: float, kernel_size: int = 7) -> np.ndarray:
+	def differenceOfGaussians(self, sigma1: float, sigma2: float, kernel_size: int,
+							  threshold_strategy: ThresholdStrategy = ThresholdStrategy.MEAN) -> np.ndarray:  # NOQA
 		"""Apply the Difference of Gaussian edge detection."""
 		blurred1 = self._guassian_blure(sigma1, kernel_size=kernel_size)
 		blurred2 = self._guassian_blure(sigma2, kernel_size=kernel_size)
 		DoG = blurred1 - blurred2
-		threshold = custDynamicThreshold(image=DoG, strategy=ThresholdStrategy.MEAN_PLUS_STD)
+		threshold = custDynamicThreshold(image=DoG, strategy=threshold_strategy)
 		return np.where(DoG > threshold, 255, 0).astype(np.uint8)
 
 	def _varianceFunction(self, neighborhood: np.ndarray) -> float:  # NOQA
