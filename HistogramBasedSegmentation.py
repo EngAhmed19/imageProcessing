@@ -118,10 +118,11 @@ class HistogramBasedSegmentation:
         segment_mean_2 = np.mean(self.gray_image[img == 0])
 
         # Step 7: Adjust Thresholds Using New Means
-        new_threshold = int((segment_mean_1 + segment_mean_2) // 2)
+        # new_threshold = int((segment_mean_1 + segment_mean_2) // 2)
+        minmean, maxmean = min(segment_mean_1, segment_mean_2), max(segment_mean_1, segment_mean_2)
 
         # Step 8: Second-Pass Segmentation
-        final_segmented_img = self.manual_histogram_segmentation(lower_threshold=0, upper_threshold=new_threshold)
+        final_segmented_img = self.manual_histogram_segmentation(lower_threshold=minmean, upper_threshold=maxmean)
 
         return final_segmented_img
 
