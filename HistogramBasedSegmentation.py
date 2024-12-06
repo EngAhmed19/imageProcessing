@@ -59,20 +59,25 @@ class HistogramBasedSegmentation:
         else:
             return segmented_img
         
+
     def _find_peaks(self, histogram: np.ndarray, peaks_min_distance:int =10):
         peaks = []
         for i in range(1, len(histogram)-1):
             # larger than the one before it and the one after it.
             if histogram[i] > histogram[i-1] and histogram[i] > histogram[i+1]:
                 # Applying peak spacing
-                if len(peaks) == 0 or i - peaks[-1] > peaks_min_distance:
+                if len(peaks)>1:
+                    print(i,"->", peaks[-1])
+                if len(peaks) == 0 or (abs(i - peaks[-1]) >= peaks_min_distance):
                     peaks.append(i)
+                
         return peaks
     
     def peak_histogram_segmentation(self, peaks_min_distance:int =10):
         histogram = Histogram(self.gray_image).getHistogram()
         # Find the peaks
         peaks = self._find_peaks(histogram=histogram, peaks_min_distance=peaks_min_distance)
+
 
         if len(peaks) < 2:
             raise ValueError("❌Not enough peaks found for segmentation.❌")
@@ -81,7 +86,35 @@ class HistogramBasedSegmentation:
         # False will sort ascending, True will sort descending. Default is False
         sorted_peaks = sorted(peaks, key=lambda x: histogram[x], reverse=True)
         peak_1, peak_2 = sorted_peaks[0], sorted_peaks[1]
-        return self.manual_histogram_segmentation(lower_threshold=peak_1, upper_threshold=peak_2)
+        threshold = (peak_1+peak_2)//2
+        print(peak_1, peak_2)
+        segmented_img = np.zeros_like(self.gray_image)
+        segmented_img[(self.gray_image >= threshold)] = 255
+        # the commented dual threshold have an issue 
+        # that if the two peaks doesn't hold true for any pixels it would produce a black iamge (zeros)
+        # return self.manual_histogram_segmentation(lower_threshold=peak_1, upper_threshold=peak_2)
+        return segmented_img
+    
+    def valley_histogram_segmentation(self, peaks_min_distance:int =10):
+        histogram = Histogram(self.gray_image).getHistogram()
+        peaks = self._find_peaks(histogram=histogram, peaks_min_distance=peaks_min_distance)
+        if len(peaks) <= 2:
+            raise ValueError("❌Not enough peaks found for segmentation.❌, valley histogram segmentation require to have at least 3 peaks ensure that the peaks_min_distance is valid")
+        # sort peaks based on their height (frequency)
+        # False will sort ascending, True will sort descending. Default is False
+        sorted_peaks = sorted(peaks, key=lambda x: histogram[x], reverse=True)
+        peak_1, peak_2 = sorted_peaks[0], sorted_peaks[1]
+        print(peaks)
+        # argmin finds the index of the min -> the bin in the histogram
+        valley_min = histogram[peak_1:peak_2].argmin() #index of the minimum between the two peaks
+        segmented_img = np.zeros_like(self.gray_image)
+        segmented_img[(self.gray_image >= valley_min)] = 255
+        return segmented_img
+        
+
+
+
+    
 
 
 
