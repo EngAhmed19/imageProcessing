@@ -65,9 +65,6 @@ class HistogramBasedSegmentation:
         for i in range(1, len(histogram)-1):
             # larger than the one before it and the one after it.
             if histogram[i] > histogram[i-1] and histogram[i] > histogram[i+1]:
-                # Applying peak spacing
-                if len(peaks)>1:
-                    print(i,"->", peaks[-1])
                 if len(peaks) == 0 or (abs(i - peaks[-1]) >= peaks_min_distance):
                     peaks.append(i)
                 
@@ -87,7 +84,7 @@ class HistogramBasedSegmentation:
         sorted_peaks = sorted(peaks, key=lambda x: histogram[x], reverse=True)
         peak_1, peak_2 = sorted_peaks[0], sorted_peaks[1]
         threshold = (peak_1+peak_2)//2
-        print(peak_1, peak_2)
+        # print(peak_1, peak_2)
         segmented_img = np.zeros_like(self.gray_image)
         segmented_img[(self.gray_image >= threshold)] = 255
         # the commented dual threshold have an issue 
@@ -104,12 +101,30 @@ class HistogramBasedSegmentation:
         # False will sort ascending, True will sort descending. Default is False
         sorted_peaks = sorted(peaks, key=lambda x: histogram[x], reverse=True)
         peak_1, peak_2 = sorted_peaks[0], sorted_peaks[1]
-        print(peaks)
+        # print(peaks)
         # argmin finds the index of the min -> the bin in the histogram
         valley_min = histogram[peak_1:peak_2].argmin() #index of the minimum between the two peaks
         segmented_img = np.zeros_like(self.gray_image)
         segmented_img[(self.gray_image >= valley_min)] = 255
         return segmented_img
+        
+    def adaptive_histogram_segmentation(self,  peaks_min_distance:int =10):
+        # first pass segmentation (first 5 steps in the algorithm is the same as valley segmentation)
+        img = self.valley_histogram_segmentation(peaks_min_distance=peaks_min_distance)
+
+        # Step 6: Calculate New Thresholds from Mean Segments
+        # Compute new thresholds based on the means of pixel intensities in the segmented regions
+        segment_mean_1 = np.mean(self.gray_image[img == 255])
+        segment_mean_2 = np.mean(self.gray_image[img == 0])
+
+        # Step 7: Adjust Thresholds Using New Means
+        new_threshold = int((segment_mean_1 + segment_mean_2) // 2)
+
+        # Step 8: Second-Pass Segmentation
+        final_segmented_img = self.manual_histogram_segmentation(lower_threshold=0, upper_threshold=new_threshold)
+
+        return final_segmented_img
+
         
 
 

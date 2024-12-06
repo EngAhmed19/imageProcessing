@@ -32,7 +32,9 @@ upper_threshold = custDynamicThreshold(preprocessed_image, strategy=ThresholdStr
 # segmented_image = segmentation.manual_histogram_segmentation(lower_threshold, upper_threshold)
 # segmented_image = segmentation.peak_histogram_segmentation(peaks_min_distance=30)
 # segmented_image = segmentation.peak_histogram_segmentation(peaks_min_distance=200)
-segmented_image = segmentation.valley_histogram_segmentation(peaks_min_distance=150)
+# segmented_image = segmentation.valley_histogram_segmentation(peaks_min_distance=150)
+
+segmented_image = segmentation.adaptive_histogram_segmentation(peaks_min_distance=50)
 
 # Visualize the original, preprocessed, and segmented images using matplotlib
 fig, axes = plt.subplots(1, 4, figsize=(20, 5))
