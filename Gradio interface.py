@@ -7,6 +7,7 @@ from BasicEdgeDetection import BasicEdgeDetection
 from AdvancedEdgeDetection import AdvancedEdgeDetection
 from HistogramEqualization import Histogram
 from Filtering import Filtering
+from ImageOperation import ImageOperation
 
 from helperFunctions import convertImageToGray, ThresholdStrategy
 
@@ -258,6 +259,19 @@ def applyFiltering(image: np.ndarray, method: str, kernel_size: int = 5) -> tupl
 			return gray_image_filter, filtering.applyMedianFilter(kernel_size=kernel_size)
 
 
+def applyImageOperation(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.ndarray]:
+	if image is not None:
+		gray_image_operation: np.ndarray = convertImageToGray(image)
+		operator = ImageOperation(image)
+
+		if choice == "Add":
+			return gray_image_operation, operator.addImage()
+		elif choice == "Subtract":
+			return gray_image_operation, operator.subtractImage()
+		elif choice == "Invert":
+			return gray_image_operation, operator.invertImage()
+
+
 with gr.Blocks() as demo:
 	with gr.Tab("Halftoning Algorithms"):
 		with gr.Row():
@@ -409,6 +423,31 @@ with gr.Blocks() as demo:
 				fn=lambda: (None, None, None, "High Pass Filter", 5),
 				inputs=[],
 				outputs=[input_image, output_image_filtering, gray_image, radio_choose, kernel_size_gradio]
+			)
+	with gr.Tab("Image Operation Algorithms"):
+		with gr.Row():
+			with gr.Column():
+				input_image = gr.Image(type="numpy", label="Upload Image")
+				radio_choose = gr.Radio(["Add", "Subtract", "Invert"],
+										label="Choose The Algorithm",
+										value="Add")  # NOQA
+				with gr.Row():
+					halftone_button = gr.Button("Apply Operation")
+					clear_button = gr.Button("Clear")
+
+			with gr.Column():
+				gray_image = gr.Image(type="numpy", label="Gray Image")
+				output_image_operation = gr.Image(type="numpy", label="Output Image")
+
+			halftone_button.click(
+				fn=applyImageOperation,
+				inputs=[input_image, radio_choose],
+				outputs=[gray_image, output_image_operation]
+			)
+			clear_button.click(
+				fn=lambda: (None, None, None, "Add"),
+				inputs=[],
+				outputs=[input_image, output_image_operation, gray_image, radio_choose]
 			)
 
 if __name__ == '__main__':
