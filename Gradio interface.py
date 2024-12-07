@@ -8,8 +8,19 @@ from AdvancedEdgeDetection import AdvancedEdgeDetection
 from HistogramEqualization import Histogram
 from Filtering import Filtering
 from ImageOperation import ImageOperation
+from HistogramBasedSegmentation import HistogramBasedSegmentation, NoiseReductionStrategy
 
-from helperFunctions import convertImageToGray, ThresholdStrategy
+from helperFunctions import convertImageToGray, ThresholdStrategy, custDynamicThreshold
+
+
+def select_noise_reduction_strategy(noise_reduction_strategy_str: str) -> NoiseReductionStrategy:
+	noise_reduction_strategy: NoiseReductionStrategy = NoiseReductionStrategy.GuassianSmoothing
+	if noise_reduction_strategy_str == "Guassian Smoothing":
+		noise_reduction_strategy = NoiseReductionStrategy.GuassianSmoothing
+	elif noise_reduction_strategy_str == "Median Filtering":
+		noise_reduction_strategy = NoiseReductionStrategy.MedianFiltering
+
+	return noise_reduction_strategy
 
 
 def select_threshold_strategy(threshold_strategy_str: str) -> ThresholdStrategy:
@@ -312,6 +323,26 @@ def applyImageOperation(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.
 			return gray_image_operation, operator.invertImage()
 
 
+def applyHistogramBasedSegmentation(image: np.ndarray, choice: str, noise_reduction_strategy_str: str, sigma: int = 3,
+									kernel_size: int = 5, active_noiseReduction: bool = False,
+									active_contrast_enhancement: bool = False) -> tuple[np.ndarray, np.ndarray]:  # NOQA
+	noise_reduction_strategy = select_noise_reduction_strategy(noise_reduction_strategy_str)
+	if image is not None:
+		gray_image_segmentation: np.ndarray = convertImageToGray(image)
+		segmentor = HistogramBasedSegmentation(image, noise_reduction_strategy, sigma, kernel_size)
+		preprocessed_image = segmentor.preprocess(active_noiseReduction, active_contrast_enhancement)
+		if choice == "Manual histogram segmentation":
+			lower_threshold = custDynamicThreshold(preprocessed_image, strategy=ThresholdStrategy.MEAN_MINUS_STD)
+			upper_threshold = custDynamicThreshold(preprocessed_image, strategy=ThresholdStrategy.MEDIAN_PLUS_STD)
+			return gray_image_segmentation, segmentor.manual_histogram_segmentation(lower_threshold, upper_threshold)
+		elif choice == "Peak histogram segmentation":
+			return gray_image_segmentation, segmentor.peak_histogram_segmentation()
+		elif choice == "Valley histogram segmentation":
+			return gray_image_segmentation, segmentor.valley_histogram_segmentation()
+		elif choice == "Adaptive histogram segmentation":
+			return gray_image_segmentation, segmentor.adaptive_histogram_segmentation()
+
+
 with gr.Blocks() as demo:
 	with gr.Tab("Halftoning Algorithms"):
 		with gr.Row():
@@ -488,6 +519,46 @@ with gr.Blocks() as demo:
 				fn=lambda: (None, None, None, "Add"),
 				inputs=[],
 				outputs=[input_image, output_image_operation, gray_image, radio_choose]
+			)
+	with gr.Tab("Histogram Based Segmentation Algorithms"):
+		with gr.Row():
+			with gr.Column():
+				input_image = gr.Image(type="numpy", label="Upload Image")
+				radio_choose_histogram_segmentation = gr.Radio(
+					["Manual histogram segmentation", "Peak histogram segmentation", "Valley histogram segmentation",
+					 "Adaptive histogram segmentation"],  # NOQA
+					label="Choose The Algorithm",  # NOQA
+					value="Manual histogram segmentation")  # NOQA
+				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=5, step=2, label="Kernel Size")
+				sigma_gradio = gr.Number(label="Enter sigma")
+				radio_noise_reduction_strategy = gr.Radio(
+					["Guassian Smoothing", "Median Filtering"],
+					label="Choose The Noise Reduction Strategy",  # NOQA
+					value="Guassian Smoothing")  # NOQA
+				apply_noise_reduction = gr.Checkbox(value=False, label="Apply Noise Reduction on the image")
+				apply_contrast_enhancement = gr.Checkbox(value=False, label="Apply contrast enhancement to an image")
+				with gr.Row():
+					edge_detection_button = gr.Button("Apply Histogram Based Segmentation")
+					clear_button = gr.Button("Clear")
+
+			with gr.Column():
+				gray_image = gr.Image(type="numpy", label="Gray Image")
+				output_image_histogram_segmented = gr.Image(type="numpy", label="Histogram Based Segmentation Image")
+
+			edge_detection_button.click(
+				fn=applyHistogramBasedSegmentation,
+				inputs=[input_image, radio_choose_histogram_segmentation, radio_noise_reduction_strategy, sigma_gradio,
+						kernel_size_gradio, apply_noise_reduction,
+						apply_contrast_enhancement],  # NOQA
+				outputs=[gray_image, output_image_histogram_segmented]
+			)
+			clear_button.click(
+				fn=lambda: (
+				None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, False, False),
+				inputs=[],
+				outputs=[input_image, output_image_histogram_segmented, gray_image, radio_choose_histogram_segmentation,
+						radio_noise_reduction_strategy, kernel_size_gradio, sigma_gradio, apply_noise_reduction,
+						 apply_contrast_enhancement]  # NOQA
 			)
 
 if __name__ == '__main__':
