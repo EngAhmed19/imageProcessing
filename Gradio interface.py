@@ -456,7 +456,7 @@ with gr.Blocks() as demo:
 					 "Contrast based smoothing"],  # NOQA
 					label="Choose The Algorithm",  # NOQA
 					value="Homogeneity")  # NOQA
-				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=3, step=2, label="Kernel Size",
+				kernel_size_gradio = gr.Slider(minimum=3, maximum=9, value=3, step=2, label="Kernel Size",
 											   visible=True)  # NOQA
 				sigma1_gradio = gr.Number(label="Enter sigma1", visible=False)
 				sigma2_gradio = gr.Number(label="Enter sigma2", visible=False)
@@ -496,7 +496,7 @@ with gr.Blocks() as demo:
 				radio_choose = gr.Radio(["High Pass Filter", "Low Pass Filter", "Median Filter"],
 										label="Choose The Type Of Filter",
 										value="High Pass Filter")  # NOQA
-				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=5, step=2, label="Kernel Size")
+				kernel_size_gradio = gr.Slider(minimum=3, maximum=9, value=5, step=2, label="Kernel Size")
 				with gr.Row():
 					filtering_button = gr.Button("Apply Filter")
 					clear_button = gr.Button("Clear")
@@ -549,7 +549,7 @@ with gr.Blocks() as demo:
 					 "Adaptive histogram segmentation"],  # NOQA
 					label="Choose The Algorithm",  # NOQA
 					value="Manual histogram segmentation")  # NOQA
-				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=5, step=2, label="Kernel Size")
+				kernel_size_gradio = gr.Slider(minimum=3, maximum=9, value=5, step=2, label="Kernel Size")
 				sigma_gradio = gr.Number(label="Enter sigma")
 				threshold1 = gr.Number(label="Enter Lower Threshold", visible=True)
 				threshold2 = gr.Number(label="Enter Upper Threshold", visible=True)
@@ -577,8 +577,8 @@ with gr.Blocks() as demo:
 			)
 			clear_button.click(
 				fn=lambda: (
-					None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, False, False, None,
-					None),
+					None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, False, 0, 0,
+					False),
 				inputs=[],
 				outputs=[input_image, output_image_histogram_segmented, gray_image, radio_choose_histogram_segmentation,
 						 radio_noise_reduction_strategy, kernel_size_gradio, sigma_gradio, apply_noise_reduction  # NOQA

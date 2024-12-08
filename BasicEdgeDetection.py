@@ -61,7 +61,6 @@ class BasicEdgeDetection:
 		gradient_magnitude = np.uint8(
 			255 * (gradient_magnitude / np.max(gradient_magnitude)))  # Normalize the result between 0-255
 
-
 		edge_detection_image: np.ndarray = np.zeros_like(gradient_magnitude)
 
 		t: int = custDynamicThreshold(gradient_magnitude, threshold_strategy)
