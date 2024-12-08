@@ -43,15 +43,14 @@ class HistogramBasedSegmentation:
 		return Histogram(image).histogramEqualization()[1]
 
 	def preprocess(self, active_noiseReduction=False, active_contrast_enhancement=False):
-		cpy_img = self.gray_image.copy()
 		print(f"Image preprocess (1): gray image is copied")
 		if active_noiseReduction:
-			cpy_img = self.noiseRedution(image=cpy_img)
+			self.gray_image = self.noiseRedution(image=self.gray_image)
 			print(f"Image preprocess (2): Noise Reduction is applied")
 		if active_contrast_enhancement:
-			cpy_img = self.contrast_enhancement(image=cpy_img)
+			self.gray_image = self.contrast_enhancement(image=self.gray_image)
 			print(f"Image preprocess (3): Contrast Enhancement is applied")
-		return cpy_img
+		return self.gray_image
 
 	def manual_histogram_segmentation(self, lower_threshold: np.floating[int], upper_threshold: np.floating[int],
 									  region_grouping: bool = False):  # NOQA
