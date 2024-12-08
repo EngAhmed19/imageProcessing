@@ -343,6 +343,14 @@ def applyHistogramBasedSegmentation(image: np.ndarray, choice: str, noise_reduct
 			return gray_image_segmentation, segmentor.adaptive_histogram_segmentation()
 
 
+def update_advanced_edge_controls(choice: str) -> gr.update:
+	if choice in ["Variance", "Range", "Homogeneity"]:
+		return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
+	elif choice in ["Difference of Gaussians"]:
+		return gr.update(visible=True), gr.update(visible=True), gr.update(visible=True)
+	return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+
+
 with gr.Blocks() as demo:
 	with gr.Tab("Halftoning Algorithms"):
 		with gr.Row():
@@ -442,9 +450,10 @@ with gr.Blocks() as demo:
 					 "Contrast based smoothing"],  # NOQA
 					label="Choose The Algorithm",  # NOQA
 					value="Homogeneity")  # NOQA
-				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=3, step=2, label="Kernel Size")
-				sigma1_gradio = gr.Number(label="Enter sigma1")
-				sigma2_gradio = gr.Number(label="Enter sigma2")
+				kernel_size_gradio = gr.Slider(minimum=1, maximum=9, value=3, step=2, label="Kernel Size",
+											   visible=True)  # NOQA
+				sigma1_gradio = gr.Number(label="Enter sigma1", visible=False)
+				sigma2_gradio = gr.Number(label="Enter sigma2", visible=False)
 				radio_threshold_strategy = gr.Radio(
 					["Mean", "Median", "Standerd deviation", "Mean+Std", "Mean-Std", "Median+Std"],
 					label="Choose The Threshold strategy",  # NOQA
@@ -468,6 +477,11 @@ with gr.Blocks() as demo:
 				inputs=[],
 				outputs=[input_image, output_image_edge_advance, gray_image, radio_choose_basic_edge,
 						 radio_threshold_strategy, kernel_size_gradio]  # NOQA
+			)
+			radio_choose_advanced_edge.change(
+				fn=update_advanced_edge_controls,
+				inputs=[radio_choose_advanced_edge],
+				outputs=[kernel_size_gradio, sigma1_gradio, sigma2_gradio]
 			)
 	with gr.Tab("Filtering Algorithms"):
 		with gr.Row():
@@ -554,10 +568,10 @@ with gr.Blocks() as demo:
 			)
 			clear_button.click(
 				fn=lambda: (
-				None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, False, False),
+					None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, False, False),
 				inputs=[],
 				outputs=[input_image, output_image_histogram_segmented, gray_image, radio_choose_histogram_segmentation,
-						radio_noise_reduction_strategy, kernel_size_gradio, sigma_gradio, apply_noise_reduction,
+						 radio_noise_reduction_strategy, kernel_size_gradio, sigma_gradio, apply_noise_reduction,
 						 apply_contrast_enhancement]  # NOQA
 			)
 
