@@ -362,14 +362,11 @@ def applyImageOperation(image1: np.ndarray, image2: np.ndarray, choice: str, rad
 		elif choice == "Mask":
 			masker = Mask(image1)
 			if mask_choice == "Circle":
-				circle_func = masker.circle_function()
-				return masker.apply_mask(circle_func)
+				return masker.apply_mask("circle")
 			if mask_choice == "Heart":
-				heart_func = masker.heart_function()
-				return masker.apply_mask(heart_func)
+				return masker.apply_mask("heart")
 			if mask_choice == "Triangle":
-				triangle_func = masker.tri_function()
-				return masker.apply_mask(triangle_func)
+				return masker.apply_mask("triangle")
 
 
 def update_image_operation_control(choice: str) -> gr.update:
