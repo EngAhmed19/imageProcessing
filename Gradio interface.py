@@ -13,7 +13,7 @@ from ImageFlipper import ImageFlipper
 from ColorManipulator import ColorManipulator
 from Mask import Mask
 
-from helperFunctions import convertImageToGray, ThresholdStrategy
+from helperFunctions import convertImageToGray, ThresholdStrategy, resize
 
 
 def select_noise_reduction_strategy(noise_reduction_strategy_str: str) -> NoiseReductionStrategy:
@@ -304,9 +304,9 @@ def applyFiltering(image: np.ndarray, method: str, kernel_size: int = 5) -> tupl
 			return gray_image_filter, filtering.applyMedianFilter(kernel_size=kernel_size)
 
 
-def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_str: str, red_factor_float: float,
-						green_factor: float, blue_factor: float, mask_choice: str) -> tuple[  # NOQA
-	np.ndarray, np.ndarray]:  # NOQA
+def applyImageOperation(image1: np.ndarray, image2: np.ndarray, choice: str, radio_choose_flipping_str: str,
+						red_factor_float: float, new_width: int, new_height: int,  # NOQA
+						green_factor: float, blue_factor: float, mask_choice: str) -> np.ndarray:  # NOQA
 	"""
 	Apply deffirent Operation on Image including:
 		1- Addition
@@ -317,8 +317,14 @@ def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_st
 
 
 	:parameter:
-		:param image: The input image.
-		:type image: np.ndarray
+		:param image1: The first input image.
+		:type image1: np.ndarray
+		:param image2: The second input image.
+		:type image2: np.ndarray
+		:param new_width: The second input image.
+		:type new_width: int
+		:param new_height: The second input image.
+		:type new_height: int
 		:param choice: choose between deffirent operations like (Addition,Subtraction,...,etc.).
 		:type choice: str
 		:param radio_choose_flipping_str: The flipping option.
@@ -332,53 +338,59 @@ def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_st
 		:param mask_choice: The choice of the mask
 		:type mask_choice: str
 
-	:returns: A tuple containing 2 outputs:
-			1- Original image in gray scale
-			2- Image after applying operation on it (Addition,Subtraction,...,etc.).
-	:rtype: tuple[np.ndarray, np.ndarray]
+	:returns: Image after applying operation on it (Addition,Subtraction,...,etc.).
+	:rtype: np.ndarray
 	"""
-	if image is not None:
-		gray_image_operation: np.ndarray = convertImageToGray(image)
-		operator = ImageOperation(image)
+	resized_image1 = resize(image1, new_width, new_height)
+	resized_image2 = resize(image2, new_width, new_height)
+	if image1 is not None and image2 is not None:
+		operator1 = ImageOperation(resized_image1)
 
 		if choice == "Add":
-			return gray_image_operation, operator.addImage()
+			return operator1.addImage(resized_image2)
 		elif choice == "Subtract":
-			return gray_image_operation, operator.subtractImage()
+			return operator1.subtractImage(resized_image2)
 		elif choice == "Invert":
-			return gray_image_operation, operator.invertImage()
+			return operator1.invertImage()
 		elif choice == "Flipping":
-			flipper = ImageFlipper(image)
-			return gray_image_operation, flipper.flip(radio_choose_flipping_str)
+			flipper = ImageFlipper(image1)
+			return flipper.flip(radio_choose_flipping_str)
 		elif choice == "Color Manipulation":
-			color_manipulator = ColorManipulator(image)
-			return gray_image_operation, color_manipulator.apply_color_filter(red_factor_float, green_factor,
-																			  blue_factor)  # NOQA
+			color_manipulator = ColorManipulator(image1)
+			return color_manipulator.apply_color_filter(red_factor_float, green_factor, blue_factor)  # NOQA
 		elif choice == "Mask":
-			masker = Mask(image)
+			masker = Mask(image1)
 			if mask_choice == "Circle":
 				circle_func = masker.circle_function()
-				return gray_image_operation, masker.apply_mask(circle_func)
+				return masker.apply_mask(circle_func)
 			if mask_choice == "Heart":
 				heart_func = masker.heart_function()
-				return gray_image_operation, masker.apply_mask(heart_func)
+				return masker.apply_mask(heart_func)
 			if mask_choice == "Triangle":
 				triangle_func = masker.tri_function()
-				return gray_image_operation, masker.apply_mask(triangle_func)
+				return masker.apply_mask(triangle_func)
 
 
 def update_image_operation_control(choice: str) -> gr.update:
-	if choice == "Flipping":
+	if choice in ["Add", "Subtract"]:
+		return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(
+			visible=False), gr.update(visible=False), gr.update(visible=True), gr.update(visible=True), gr.update(
+			visible=True)
+	elif choice == "Flipping":
 		return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(
-			visible=False), gr.update(visible=False)
+			visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(
+			visible=False)
 	elif choice == "Color Manipulation":
 		return gr.update(visible=False), gr.update(visible=True), gr.update(visible=True), gr.update(
-			visible=True), gr.update(visible=False)
+			visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(
+			visible=False)
 	elif choice == "Mask":
 		return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(
-			visible=False), gr.update(visible=True)
+			visible=False), gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(
+			visible=False)
 	return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(
-		visible=False), gr.update(visible=False)
+		visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(
+		visible=False)
 
 
 def applyHistogramBasedSegmentation(image: np.ndarray, choice: str, noise_reduction_strategy_str: str,
@@ -584,7 +596,8 @@ with gr.Blocks() as demo:
 	with gr.Tab("Image Operation Algorithms"):
 		with gr.Row():
 			with gr.Column():
-				input_image = gr.Image(type="numpy", label="Upload Image")
+				input_image1 = gr.Image(type="numpy", label="Upload Image1")
+				input_image2 = gr.Image(type="numpy", label="Upload Image2", visible=True)
 				radio_choose = gr.Radio(["Add", "Subtract", "Invert", "Flipping", "Color Manipulation", "Mask"],
 										label="Choose The Algorithm",
 										value="Add")  # NOQA
@@ -598,30 +611,32 @@ with gr.Blocks() as demo:
 				radio_choose_Mask = gr.Radio(["Circle", "Heart", "Triangle"],
 											 label="Choose The Mask",  # NOQA
 											 value="Circle", visible=False)  # NOQA
+				new_width = gr.Number(label="Enter new width", minimum=1, visible=True)
+				new_height = gr.Number(label="Enter new height", minimum=1, visible=True)
 				with gr.Row():
 					halftone_button = gr.Button("Apply Operation")
 					clear_button = gr.Button("Clear")
 
 			with gr.Column():
-				gray_image = gr.Image(type="numpy", label="Gray Image")
 				output_image_operation = gr.Image(type="numpy", label="Output Image")
 
 			halftone_button.click(
 				fn=applyImageOperation,
-				inputs=[input_image, radio_choose, radio_choose_flipping, red_factor, green_factor, blue_factor,
-						radio_choose_Mask],  # NOQA
-				outputs=[gray_image, output_image_operation]
+				inputs=[input_image1, input_image2, radio_choose, radio_choose_flipping, red_factor, new_width,
+						new_height, green_factor, blue_factor, radio_choose_Mask],  # NOQA
+				outputs=[output_image_operation]
 			)
 			clear_button.click(
-				fn=lambda: (None, None, None, "Add", "horizontal", 1, 1, 1, "Circle"),
+				fn=lambda: (None, None, "Add", "horizontal", 1, 1, 1, "Circle", None),
 				inputs=[],
-				outputs=[input_image, output_image_operation, gray_image, radio_choose, radio_choose_flipping,
-						 red_factor, green_factor, blue_factor, radio_choose_Mask]  # NOQA
+				outputs=[input_image1, output_image_operation, radio_choose, radio_choose_flipping,
+						 red_factor, green_factor, blue_factor, radio_choose_Mask, input_image2]  # NOQA
 			)
 			radio_choose.change(
 				fn=update_image_operation_control,
 				inputs=[radio_choose],
-				outputs=[radio_choose_flipping, red_factor, green_factor, blue_factor, radio_choose_Mask]
+				outputs=[radio_choose_flipping, red_factor, green_factor, blue_factor, radio_choose_Mask, input_image2,
+						 new_width, new_height]  # NOQA
 			)
 	with gr.Tab("Histogram Based Segmentation Algorithms"):
 		with gr.Row():
@@ -647,7 +662,7 @@ with gr.Blocks() as demo:
 					clear_button = gr.Button("Clear")
 
 			with gr.Column():
-				gray_image = gr.Image(type="numpy", label="Gray Image")
+				gray_image = gr.Image(type="numpy", label="Gray Image")  # NOQA
 				output_image_histogram_segmented = gr.Image(type="numpy", label="Histogram Based Segmentation Image")
 
 			edge_detection_button.click(
