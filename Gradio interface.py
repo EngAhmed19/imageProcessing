@@ -56,8 +56,8 @@ def plot_histogram(image: np.ndarray, label: str) -> plt.Figure:
 	return fig
 
 
-def simpleHalfToningAlgorithm(image: np.ndarray, choice: str, threshold_strategy_str: str) -> tuple[
-	np.ndarray, np.ndarray]:
+def simpleHalfToningAlgorithm(image: np.ndarray, choice: str, threshold_strategy_str: str,
+							  bayer_matrix_size: int = 2) -> tuple[np.ndarray, np.ndarray]:  # NOQA
 	"""
 	Apply a halftoning algorithm to an image based on the selected choice. This function supports two types of halftoning
 	algorithms:
@@ -78,6 +78,8 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str, threshold_strategy
 		:type choice: str
 		:param threshold_strategy_str: which threshold strategy will be applied to the image.
 		:type threshold_strategy_str:str
+		:param bayer_matrix_size: The bayer matrix size that is used for orderd ditherd algorithm
+		:type bayer_matrix_size: int
 
 	:return:
 		A tuple containing:
@@ -107,7 +109,15 @@ def simpleHalfToningAlgorithm(image: np.ndarray, choice: str, threshold_strategy
 			result = half_toning_image.errorDiffusionHalfToning(threshold_strategy)
 			result /= 255
 
+		elif choice == "Ordered Dithering":
+			result = half_toning_image.order_dither(bayer_matrix_size)
 	return gray_image_fn, result
+
+
+def update_halftoning_algorithm_control(choice: str) -> gr.update:
+	if choice == "Ordered Dithering":
+		return gr.update(visible=True), gr.update(visible=False)
+	return gr.update(visible=False), gr.update(visible=True)
 
 
 def histogramEqualization(image: np.ndarray) -> tuple[np.ndarray, np.ndarray, plt.Figure, plt.Figure]:
@@ -362,9 +372,11 @@ with gr.Blocks() as demo:
 		with gr.Row():
 			with gr.Column():
 				input_image = gr.Image(type="numpy", label="Upload Image")
-				radio_choose = gr.Radio(["Simple Halftoning", "Error Diffusion Halftoning"],
+				radio_choose = gr.Radio(["Simple Halftoning", "Error Diffusion Halftoning", "Ordered Dithering"],
 										label="Choose The Algorithm",
 										value="Simple Halftoning")  # NOQA
+				bayer_matrix_size = gr.Slider(minimum=2, maximum=8, value=4, step=2, label="Bayer Matrix Size",
+											  visible=False)  # NOQA
 				radio_threshold_strategy = gr.Radio(
 					["Mean", "Median", "Standerd deviation", "Mean+Std", "Mean-Std", "Median+Std"],
 					label="Choose The Threshold strategy",  # NOQA
@@ -379,13 +391,19 @@ with gr.Blocks() as demo:
 
 			halftone_button.click(
 				fn=simpleHalfToningAlgorithm,
-				inputs=[input_image, radio_choose, radio_threshold_strategy],
+				inputs=[input_image, radio_choose, radio_threshold_strategy, bayer_matrix_size],
 				outputs=[gray_image, output_image_halftone]
 			)
 			clear_button.click(
-				fn=lambda: (None, None, None, "Simple Halftoning", "Mean"),
+				fn=lambda: (None, None, None, "Simple Halftoning", "Mean", 4),
 				inputs=[],
-				outputs=[input_image, output_image_halftone, gray_image, radio_choose, radio_threshold_strategy]
+				outputs=[input_image, output_image_halftone, gray_image, radio_choose, radio_threshold_strategy,
+						 bayer_matrix_size]  # NOQA
+			)
+			radio_choose.change(
+				fn=update_halftoning_algorithm_control,
+				inputs=[radio_choose],
+				outputs=[bayer_matrix_size, radio_threshold_strategy]
 			)
 	with gr.Tab("Histogram Equalization"):
 		with gr.Row():
