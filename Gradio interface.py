@@ -10,6 +10,7 @@ from Filtering import Filtering
 from ImageOperation import ImageOperation
 from HistogramBasedSegmentation import HistogramBasedSegmentation, NoiseReductionStrategy
 from ImageFlipper import ImageFlipper
+from ColorManipulator import ColorManipulator
 
 from helperFunctions import convertImageToGray, ThresholdStrategy
 
@@ -302,8 +303,8 @@ def applyFiltering(image: np.ndarray, method: str, kernel_size: int = 5) -> tupl
 			return gray_image_filter, filtering.applyMedianFilter(kernel_size=kernel_size)
 
 
-def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_str: str) -> tuple[
-	np.ndarray, np.ndarray]:
+def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_str: str, red_factor_float: float,
+						green_factor: float, blue_factor: float) -> tuple[np.ndarray, np.ndarray]:  # NOQA
 	"""
 	Apply deffirent Operation on Image including:
 		1- Addition
@@ -312,6 +313,7 @@ def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_st
 
 		3- Inversion.
 
+
 	:parameter:
 		:param image: The input image.
 		:type image: np.ndarray
@@ -319,6 +321,12 @@ def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_st
 		:type choice: str
 		:param radio_choose_flipping_str: The flipping option.
 		:type radio_choose_flipping_str: str
+		:param red_factor_float: The red factor.
+		:type red_factor_float: float
+		:param blue_factor: The blue factor.
+		:type blue_factor: float
+		:param green_factor: The green factor.
+		:type green_factor: float
 
 	:returns: A tuple containing 2 outputs:
 			1- Original image in gray scale
@@ -338,16 +346,22 @@ def applyImageOperation(image: np.ndarray, choice: str, radio_choose_flipping_st
 		elif choice == "Flipping":
 			flipper = ImageFlipper(image)
 			return gray_image_operation, flipper.flip(radio_choose_flipping_str)
+		elif choice == "Color Manipulation":
+			color_manipulator = ColorManipulator(image)
+			return gray_image_operation, color_manipulator.apply_color_filter(red_factor_float, green_factor,
+																			  blue_factor)  # NOQA
 
 
 def update_image_operation_control(choice: str) -> gr.update:
 	if choice == "Flipping":
-		return gr.update(visible=True)
-	return gr.update(visible=False)
+		return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+	elif choice == "Color Manipulation":
+		return gr.update(visible=False), gr.update(visible=True), gr.update(visible=True), gr.update(visible=True)
+	return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
 
 
 def applyHistogramBasedSegmentation(image: np.ndarray, choice: str, noise_reduction_strategy_str: str,
-									lower_threshold: float, upper_threshold: float, min_peaks: int = 10,
+									lower_threshold: float, upper_threshold: float, min_peaks: int = 10,  # NOQA
 									sigma: int = 3,
 									kernel_size: int = 5,
 									active_contrast_enhancement: bool = False) -> tuple[np.ndarray, np.ndarray]:  # NOQA
@@ -550,12 +564,15 @@ with gr.Blocks() as demo:
 		with gr.Row():
 			with gr.Column():
 				input_image = gr.Image(type="numpy", label="Upload Image")
-				radio_choose = gr.Radio(["Add", "Subtract", "Invert", "Flipping"],
+				radio_choose = gr.Radio(["Add", "Subtract", "Invert", "Flipping", "Color Manipulation"],
 										label="Choose The Algorithm",
 										value="Add")  # NOQA
 				radio_choose_flipping = gr.Radio(["horizontal", "vertical", "horizontal-vertical"],
 												 label="Choose The Flipping techniqe",  # NOQA
 												 value="horizontal", visible=False)  # NOQA
+				red_factor = gr.Slider(label="Red Factor", minimum=0, maximum=10, value=0.5, step=0.1, visible=False)
+				green_factor = gr.Slider(label="Green Factor", minimum=0, maximum=10, value=0.5, step=0.1, visible=False)
+				blue_factor = gr.Slider(label="Blue Factor", minimum=0, maximum=10, value=0.5, step=0.1, visible=False)
 				with gr.Row():
 					halftone_button = gr.Button("Apply Operation")
 					clear_button = gr.Button("Clear")
@@ -566,18 +583,19 @@ with gr.Blocks() as demo:
 
 			halftone_button.click(
 				fn=applyImageOperation,
-				inputs=[input_image, radio_choose, radio_choose_flipping],
+				inputs=[input_image, radio_choose, radio_choose_flipping, red_factor, green_factor, blue_factor],
 				outputs=[gray_image, output_image_operation]
 			)
 			clear_button.click(
-				fn=lambda: (None, None, None, "Add", "horizontal"),
+				fn=lambda: (None, None, None, "Add", "horizontal", 1, 1, 1),
 				inputs=[],
-				outputs=[input_image, output_image_operation, gray_image, radio_choose, radio_choose_flipping]
+				outputs=[input_image, output_image_operation, gray_image, radio_choose, radio_choose_flipping,
+						 red_factor, green_factor, blue_factor]  # NOQA
 			)
 			radio_choose.change(
 				fn=update_image_operation_control,
 				inputs=[radio_choose],
-				outputs=[radio_choose_flipping]
+				outputs=[radio_choose_flipping, red_factor, green_factor, blue_factor]
 			)
 	with gr.Tab("Histogram Based Segmentation Algorithms"):
 		with gr.Row():
