@@ -107,7 +107,7 @@ class HistogramBasedSegmentation:
 		else:
 			return segmented_img
 
-	def _find_peaks(self, histogram: np.ndarray, peaks_min_distance: int = 10):  # NOQA
+	def _find_peaks(self, histogram: np.ndarray, peaks_min_distance: int = 1):  # NOQA
 		peaks = []
 		for i in range(1, len(histogram) - 1):
 			# larger than the one before it and the one after it.
