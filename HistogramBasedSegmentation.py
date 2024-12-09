@@ -78,6 +78,7 @@ class HistogramBasedSegmentation:
 		print(f"Image preprocess (1): gray image is copied")
 		if active_noiseReduction:
 			self.gray_image = self.noiseRedution(image=self.gray_image)
+			self.gray_image = np.uint8((self.gray_image * 255) / 255)
 			print(f"Image preprocess (2): Noise Reduction is applied")
 		if active_contrast_enhancement:
 			self.gray_image = self.contrast_enhancement(image=self.gray_image)
@@ -107,7 +108,7 @@ class HistogramBasedSegmentation:
 		else:
 			return segmented_img
 
-	def _find_peaks(self, histogram: np.ndarray, peaks_min_distance: int = 1):  # NOQA
+	def _find_peaks(self, histogram: np.ndarray, peaks_min_distance: int = 10):  # NOQA
 		peaks = []
 		for i in range(1, len(histogram) - 1):
 			# larger than the one before it and the one after it.

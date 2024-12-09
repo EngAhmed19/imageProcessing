@@ -334,23 +334,23 @@ def applyImageOperation(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.
 
 
 def applyHistogramBasedSegmentation(image: np.ndarray, choice: str, noise_reduction_strategy_str: str,
-									lower_threshold: float, upper_threshold: float,
+									lower_threshold: float, upper_threshold: float, min_peaks: int = 10,
 									sigma: int = 3,
-									kernel_size: int = 5, active_noiseReduction: bool = False,
+									kernel_size: int = 5,
 									active_contrast_enhancement: bool = False) -> tuple[np.ndarray, np.ndarray]:  # NOQA
 	noise_reduction_strategy = select_noise_reduction_strategy(noise_reduction_strategy_str)
 	if image is not None:
 		gray_image_segmentation: np.ndarray = convertImageToGray(image)
 		segmentor = HistogramBasedSegmentation(image, noise_reduction_strategy, sigma, kernel_size)
-		_ = segmentor.preprocess(active_noiseReduction, active_contrast_enhancement)
+		_ = segmentor.preprocess(True, active_contrast_enhancement)
 		if choice == "Manual histogram segmentation":
 			return gray_image_segmentation, segmentor.manual_histogram_segmentation(lower_threshold, upper_threshold)
 		elif choice == "Peak histogram segmentation":
-			return gray_image_segmentation, segmentor.peak_histogram_segmentation()
+			return gray_image_segmentation, segmentor.peak_histogram_segmentation(min_peaks)
 		elif choice == "Valley histogram segmentation":
-			return gray_image_segmentation, segmentor.valley_histogram_segmentation()
+			return gray_image_segmentation, segmentor.valley_histogram_segmentation(min_peaks)
 		elif choice == "Adaptive histogram segmentation":
-			return gray_image_segmentation, segmentor.adaptive_histogram_segmentation()
+			return gray_image_segmentation, segmentor.adaptive_histogram_segmentation(min_peaks)
 
 
 def update_advanced_edge_controls(choice: str) -> gr.update:
@@ -363,8 +363,8 @@ def update_advanced_edge_controls(choice: str) -> gr.update:
 
 def update_histogram_based_segmentation_control(choice: str) -> gr.update:
 	if choice == "Manual histogram segmentation":
-		return gr.update(visible=True), gr.update(visible=True)
-	return gr.update(visible=False), gr.update(visible=False)
+		return gr.update(visible=True), gr.update(visible=True), gr.update(visible=False)
+	return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
 
 
 with gr.Blocks() as demo:
@@ -571,11 +571,11 @@ with gr.Blocks() as demo:
 				sigma_gradio = gr.Number(label="Enter sigma")
 				threshold1 = gr.Number(label="Enter Lower Threshold", visible=True)
 				threshold2 = gr.Number(label="Enter Upper Threshold", visible=True)
+				min_peaks = gr.Number(label="Choose minimum peak", visible=False, value=10, minimum=1)
 				radio_noise_reduction_strategy = gr.Radio(
-					["Guassian Smoothing", "Median Filtering"],
+					["Guassian Smoothing"],
 					label="Choose The Noise Reduction Strategy",  # NOQA
 					value="Guassian Smoothing")  # NOQA
-				apply_noise_reduction = gr.Checkbox(value=False, label="Apply Noise Reduction on the image")
 				apply_contrast_enhancement = gr.Checkbox(value=False, label="Apply contrast enhancement to an image")
 				with gr.Row():
 					edge_detection_button = gr.Button("Apply Histogram Based Segmentation")
@@ -588,24 +588,22 @@ with gr.Blocks() as demo:
 			edge_detection_button.click(
 				fn=applyHistogramBasedSegmentation,
 				inputs=[input_image, radio_choose_histogram_segmentation, radio_noise_reduction_strategy, threshold1,
-						threshold2, sigma_gradio,
-						kernel_size_gradio, apply_noise_reduction,
-						apply_contrast_enhancement],  # NOQA
+						threshold2, min_peaks, sigma_gradio, kernel_size_gradio, apply_contrast_enhancement],  # NOQA
 				outputs=[gray_image, output_image_histogram_segmented]
 			)
 			clear_button.click(
 				fn=lambda: (
-					None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, False, 0, 0,
-					False),
+					None, None, None, "Manual histogram segmentation", "Guassian Smoothing", 5, 2, 0, 0,
+					False, 10),
 				inputs=[],
 				outputs=[input_image, output_image_histogram_segmented, gray_image, radio_choose_histogram_segmentation,
-						 radio_noise_reduction_strategy, kernel_size_gradio, sigma_gradio, apply_noise_reduction  # NOQA
-					, threshold1, threshold2, apply_contrast_enhancement]  # NOQA
+						 radio_noise_reduction_strategy, kernel_size_gradio, sigma_gradio  # NOQA
+					, threshold1, threshold2, apply_contrast_enhancement, min_peaks]  # NOQA
 			)
 			radio_choose_histogram_segmentation.change(
 				fn=update_histogram_based_segmentation_control,
 				inputs=[radio_choose_histogram_segmentation],
-				outputs=[threshold1, threshold2]
+				outputs=[threshold1, threshold2, min_peaks]
 			)
 
 if __name__ == '__main__':
