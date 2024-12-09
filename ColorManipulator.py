@@ -48,21 +48,3 @@ class ColorManipulator:
         return cpy_img
 
 
-
-
-# # Example image as a NumPy array (replace with an actual image read operation)
-# image = plt.imread("woody.png")
-
-# # Initialize the ImageManipulator class
-# manipulator = ColorManipulator(image)
-
-# # Apply a color filter
-# manipulator.apply_color_filter(1, 3, 1)
-
-# # Retrieve the manipulated image
-# output_image = manipulator.get_image()
-
-# # Display the final image
-# plt.imshow(output_image)
-# plt.axis('off')  # Hide axis labels
-# plt.show()
