@@ -324,7 +324,7 @@ def applyImageOperation(image: np.ndarray, choice: str) -> tuple[np.ndarray, np.
 
 
 def applyHistogramBasedSegmentation(image: np.ndarray, choice: str, noise_reduction_strategy_str: str,
-									lower_threshold: np.floating[int], upper_threshold: np.floating[int],
+									lower_threshold: float, upper_threshold: float,
 									sigma: int = 3,
 									kernel_size: int = 5, active_noiseReduction: bool = False,
 									active_contrast_enhancement: bool = False) -> tuple[np.ndarray, np.ndarray]:  # NOQA

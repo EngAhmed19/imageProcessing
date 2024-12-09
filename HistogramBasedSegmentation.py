@@ -6,7 +6,9 @@ from Filtering import Filtering
 from AdvancedEdgeDetection import AdvancedEdgeDetection
 from enum import Enum
 from scipy.ndimage import label
-from scipy.signal import find_peaks
+
+
+# from scipy.signal import find_peaks
 
 
 class NoiseReductionStrategy(Enum):
@@ -16,12 +18,13 @@ class NoiseReductionStrategy(Enum):
 
 class HistogramBasedSegmentation:
 	"""
-    A class for performing image segmentation based on histogram analysis.
+	A class for performing image segmentation based on histogram analysis.
 
-    This class includes functionality for noise reduction, contrast enhancement, 
-    and various histogram-based segmentation techniques, such as manual thresholding,
-    peak-based segmentation, and adaptive segmentation.
-    """
+	This class includes functionality for noise reduction, contrast enhancement,
+	and various histogram-based segmentation techniques, such as manual thresholding,
+	peak-based segmentation, and adaptive segmentation.
+	"""
+
 	def __init__(self, image: np.ndarray,
 				 noise_reduction_strategy: NoiseReductionStrategy = NoiseReductionStrategy.MedianFiltering,  # NOQA
 				 sigma: float = 2, kernel_size: int = 5):  # NOQA
@@ -53,11 +56,11 @@ class HistogramBasedSegmentation:
 
 	def contrast_enhancement(self, image: np.ndarray = None):
 		"""
-        Enhance the contrast of the image using histogram equalization.
-        :parameter:
+		Enhance the contrast of the image using histogram equalization.
+		:parameter:
 			:param image: The image to enhance contrast for, defaults to the original image.
 		:returns: The contrast-enhanced image.
-        """
+		"""
 		if image is None:
 			image = self.image
 		# return the equalized image
@@ -65,13 +68,13 @@ class HistogramBasedSegmentation:
 
 	def preprocess(self, active_noiseReduction=False, active_contrast_enhancement=False):
 		"""
-        Preprocess the image by applying noise reduction and/or contrast enhancement.
+		Preprocess the image by applying noise reduction and/or contrast enhancement.
 
-        :parameter:
+		:parameter:
 			:param active_noiseReduction: Whether to apply noise reduction, defaults to False.
 			:param active_contrast_enhancement: Whether to apply contrast enhancement, defaults to False.
-        :returns: The preprocessed image.
-        """
+		:returns: The preprocessed image.
+		"""
 		print(f"Image preprocess (1): gray image is copied")
 		if active_noiseReduction:
 			self.gray_image = self.noiseRedution(image=self.gray_image)
@@ -86,13 +89,13 @@ class HistogramBasedSegmentation:
 		"""
 		Segment the image manually using specified thresholds.
 
-        :parameter:
+		:parameter:
 			:param lower_threshold: The lower intensity threshold for segmentation.
 			:param upper_threshold: The upper intensity threshold for segmentation.
 			:param region_grouping: Whether to group connected regions, defaults to False.
 			:return: The segmented image, and optionally labeled regions if region_grouping is True.
 		"""
-		
+
 		segmented_img = np.zeros_like(self.gray_image)
 		segmented_img[(self.gray_image >= lower_threshold) & (self.gray_image <= upper_threshold)] = 255
 
@@ -116,21 +119,21 @@ class HistogramBasedSegmentation:
 
 	def peak_histogram_segmentation(self, peaks_min_distance: int = 10):
 		"""
-        Perform segmentation by identifying peaks in the histogram.
+		Perform segmentation by identifying peaks in the histogram.
 		
-        :parameter:
+		:parameter:
 			:param peaks_min_distance: Minimum distance between peaks in the histogram, defaults to 10.
 		:return: The segmented image.
 
-        :raises ValueError: If not enough peaks are found for segmentation.
-        """
+		:raises ValueError: If not enough peaks are found for segmentation.
+		"""
 		histogram = Histogram(self.gray_image).getHistogram()
 		# Find the peaks
 		peaks = self._find_peaks(histogram=histogram, peaks_min_distance=peaks_min_distance)
-		# the build in SciPy equivilant function 
+		# the build in SciPy equivalent function
 		# peaks, _ = find_peaks(x=histogram, distance=10)
 		# print(peaks, "shape\n",peaks.shape)
-		print(peaks, "shape\n",len(peaks))
+		print(peaks, "shape\n", len(peaks))
 
 		if len(peaks) < 2:
 			raise ValueError("❌Not enough peaks found for segmentation.❌")
@@ -151,13 +154,13 @@ class HistogramBasedSegmentation:
 
 	def valley_histogram_segmentation(self, peaks_min_distance: int = 10):
 		"""
-        Perform segmentation by identifying valleys between peaks in the histogram.
+		Perform segmentation by identifying valleys between peaks in the histogram.
 
 		:parameter:
 			:param peaks_min_distance: Minimum distance between peaks in the histogram, defaults to 10.
-        :return: The segmented image.
-        :raises ValueError: If not enough peaks are found for valley segmentation.
-        """
+		:return: The segmented image.
+		:raises ValueError: If not enough peaks are found for valley segmentation.
+		"""
 		histogram = Histogram(self.gray_image).getHistogram()
 		peaks = self._find_peaks(histogram=histogram, peaks_min_distance=peaks_min_distance)
 		if len(peaks) <= 2:
@@ -179,14 +182,14 @@ class HistogramBasedSegmentation:
 
 	def adaptive_histogram_segmentation(self, peaks_min_distance: int = 10):
 		"""
-        Perform adaptive histogram segmentation using mean-based adjustments.
-        
-		:parameter:
-        	:param peaks_min_distance: Minimum distance between peaks in the histogram, defaults to 10.
-        :return: The segmented image after adaptive processing.
+		Perform adaptive histogram segmentation using mean-based adjustments.
 
-        :raises ValueError: If not enough peaks are found for segmentation.
-        """
+		:parameter:
+			:param peaks_min_distance: Minimum distance between peaks in the histogram, defaults to 10.
+		:return: The segmented image after adaptive processing.
+
+		:raises ValueError: If not enough peaks are found for segmentation.
+		"""
 		# first pass segmentation (first 5 steps in the algorithm is the same as valley segmentation)
 		img = self.valley_histogram_segmentation(peaks_min_distance=peaks_min_distance)
 
@@ -200,6 +203,7 @@ class HistogramBasedSegmentation:
 		minmean, maxmean = min(segment_mean_1, segment_mean_2), max(segment_mean_1, segment_mean_2)
 
 		# Step 8: Second-Pass Segmentation
-		final_segmented_img = self.manual_histogram_segmentation(lower_threshold=minmean, upper_threshold=maxmean)
+		final_segmented_img = self.manual_histogram_segmentation(lower_threshold=minmean,  # NOQA
+																 upper_threshold=maxmean)  # NOQA
 
 		return final_segmented_img
