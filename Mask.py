@@ -75,7 +75,11 @@ class Mask:
 		mask = np.zeros((height, width), dtype=np.uint8)
 		for i in range(len(x) - 1):
 			mask[y[i], x[i]] = 255
-
+			
+        # mask[::-1, :] reversing the rows
+		# np.maximum.accumulate(arr, axis=0) performs a cumulative maximum operation along the specified axis (rows)
+		# [0, 0, 255, 0, 0]
+		# [0, 0, 255, 255, 255]
 		return np.maximum.accumulate(mask[::-1, :], axis=0)
 
 	def tri_function(self):
