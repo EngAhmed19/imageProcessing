@@ -127,6 +127,7 @@ class HistogramBasedSegmentation:
 		histogram = Histogram(self.gray_image).getHistogram()
 		# Find the peaks
 		peaks = self._find_peaks(histogram=histogram, peaks_min_distance=peaks_min_distance)
+		# the build in SciPy equivilant function 
 		# peaks, _ = find_peaks(x=histogram, distance=10)
 		# print(peaks, "shape\n",peaks.shape)
 		print(peaks, "shape\n",len(peaks))
