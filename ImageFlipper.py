@@ -3,7 +3,6 @@ class ImageFlipper:
         self.image = image
 
     def flip(self, flip_type):
-
         if flip_type == "horizontal":
             flipped_image = self.image[:, ::-1]
 

@@ -55,6 +55,7 @@ class Histogram:
 		area: int = row * col
 		dm = 256
 
+
 		for i in range(row):
 			for j in range(col):
 				k = self.gray_image[i][j]

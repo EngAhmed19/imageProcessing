@@ -11,6 +11,7 @@ def convertImageToGray(image: np.ndarray) -> np.ndarray:
 	return image
 
 
+
 def custImageToGray(image: np.ndarray) -> np.ndarray:
 	"""
 	Luminosity Method : Uses weighted average based on human perception of color brightness. python return np.dot(img,
