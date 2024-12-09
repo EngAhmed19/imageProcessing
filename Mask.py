@@ -1,64 +1,56 @@
+import cv2
 import numpy as np
 
 class Mask:
-    def __init__(self):
-        pass
-    def mask_function(self):
-        pass
-    def circle_function(self):
-        pass
-    def heart_function(self):
-        # use heart equation
-        pass
-    def tri_function(slef):
-        pass 
-    def apply_mask(self):
-        pass
+    def _init_(self, image:np.ndarray):
+        self.image = image
+    
 
+    def apply_mask(self, shape_function, opacity=0.5):
+        image = self.image
+        mask = shape_function(image)
+        masked_image = cv2.bitwise_and(image, image, mask=mask)
+        result_image = cv2.addWeighted(image, 1 - opacity, masked_image, opacity, 0)
+        return result_image
 
-# def apply_circular_mask(image_path, center=None, radius=None, opacity=0.5):
-#     """
-#     Applies a circular mask to an image and returns the result with reduced opacity.
+    def circle_function(self, image, center=None, radius=None):
+        height, width = image.shape[:2]
+        if center is None:
+            center = (width // 2, height // 2)
+        if radius is None:
+            radius = min(width, height) // 2
 
-#     Args:
-#         image_path (str): Path to the input image.
-#         center (tuple): (x, y) coordinates for the mask's center. Default is the center of the image.
-#         radius (int): Radius of the circular mask. Default is half the smaller image dimension.
-#         opacity (float): Opacity of the mask. Value should be between 0 (transparent) and 1 (opaque).
-#     """
-#     # Read the image
-#     image = cv2.imread(image_path)
-#     if image is None:
-#         raise ValueError("Image not found or invalid image path.")
+        mask = np.zeros((height, width), dtype=np.uint8)
+        mask = cv2.circle(mask, center, radius, 255, -1)
+        return mask
 
-#     # Get image dimensions
-#     height, width = image.shape[:2]
+    def heart_function(self, image):
+        def heart_curve(t):
+            x = 16 * (np.sin(t) ** 3)
+            y = 13 * np.cos(t) - 5 * np.cos(2 * t) - 2 * np.cos(3 * t) - np.cos(4 * t)
+            return x, y
 
-#     # Set default center and radius if not provided
-#     if center is None:
-#         center = (width // 2, height // 2)
-#     if radius is None:
-#         radius = min(width, height) // 2
+        height, width = image.shape[:2]
+        t = np.linspace(0, 2 * np.pi, 1000)
+        x, y = heart_curve(t)
 
-#     # Create a mask with the same dimensions as the image
-#     mask = np.zeros((height, width), dtype=np.uint8)
+        x = ((x - np.min(x)) / (np.max(x) - np.min(x)) * (width - 1)).astype(np.int32)
+        y = ((y - np.min(y)) / (np.max(y) - np.min(y)) * (height - 1)).astype(np.int32)
 
-#     # Draw a white filled circle on the mask
-#     cv2.circle(mask, center, radius, 255, -1)
+        mask = np.zeros((height, width), dtype=np.uint8)
+        points = np.array([list(zip(x, y))], dtype=np.int32)
+        cv2.fillPoly(mask, points, 255)
+        return mask[::-1, :]
 
-#     # Apply the mask to the image
-#     masked_image = cv2.bitwise_and(image, image, mask=mask)
+    def tri_function(self, image):
+        height, width = image.shape[:2]
+        mask = np.zeros((height, width), dtype=np.uint8)
+        points = np.array([
+            [width // 2, height // 4],
+            [width // 4, 3 * height // 4],
+            [3 * width // 4, 3 * height // 4]
+        ])
+        cv2.fillPoly(mask, [points], 255)
+        return mask
 
-#     # Blend the masked image with the original image to reduce opacity
-#     result_image = cv2.addWeighted(image, 1 - opacity, masked_image, opacity, 0)
-
-#     return result_image
-# import matplotlib.pyplot as plt
-# from PIL import Image
-# # make a two subplots
-# fig, ax = plt.subplots(1, 3, figsize=(12, 6))
-# ax[0].imshow(Image.open('images/woody.png'))
-# ax[1].imshow(apply_circular_mask('images/woody.png', radius=230, opacity=0.6))
-# ax[2].imshow(apply_circular_mask('images/woody.png',center=(0,30), radius=100, opacity=0.7))
-# plt.show()
 

@@ -362,3 +362,4 @@ $$
   - Inverts the pixels by subtracting them from the number of gray shades. 
     - (0 becomes 255, 1 becomes 254, etc.)
   
+****
