@@ -342,14 +342,15 @@ def applyImageOperation(image1: np.ndarray, image2: np.ndarray, choice: str, rad
 	:rtype: np.ndarray
 	"""
 	resized_image1 = resize(image1, new_width, new_height)
-	resized_image2 = resize(image2, new_width, new_height)
-	if image1 is not None and image2 is not None:
+	if image2 is not None:
+		resized_image2 = resize(image2, new_width, new_height)
+	if image1 is not None:
 		operator1 = ImageOperation(resized_image1)
 
 		if choice == "Add":
-			return operator1.addImage(resized_image2)
+			return operator1.addImage(resized_image2)  # NOQA
 		elif choice == "Subtract":
-			return operator1.subtractImage(resized_image2)
+			return operator1.subtractImage(resized_image2)  # NOQA
 		elif choice == "Invert":
 			return operator1.invertImage()
 		elif choice == "Flipping":
@@ -611,8 +612,8 @@ with gr.Blocks() as demo:
 				radio_choose_Mask = gr.Radio(["Circle", "Heart", "Triangle"],
 											 label="Choose The Mask",  # NOQA
 											 value="Circle", visible=False)  # NOQA
-				new_width = gr.Number(label="Enter new width", minimum=1, visible=True)
-				new_height = gr.Number(label="Enter new height", minimum=1, visible=True)
+				new_width = gr.Number(label="Enter new width", minimum=1, visible=True, value=400)
+				new_height = gr.Number(label="Enter new height", minimum=1, visible=True, value=400)
 				with gr.Row():
 					halftone_button = gr.Button("Apply Operation")
 					clear_button = gr.Button("Clear")
