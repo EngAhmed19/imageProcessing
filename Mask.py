@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 
 class Mask:
-    def _init_(self, image:np.ndarray):
+    def __init__(self, image:np.ndarray):
         self.image = image
-    
+
 
     def apply_mask(self, shape_function, opacity=0.5):
         image = self.image
