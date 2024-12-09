@@ -11,7 +11,6 @@ def convertImageToGray(image: np.ndarray) -> np.ndarray:
 	return image
 
 
-
 def custImageToGray(image: np.ndarray) -> np.ndarray:
 	"""
 	Luminosity Method : Uses weighted average based on human perception of color brightness. python return np.dot(img,
@@ -34,11 +33,12 @@ def custImageToGray(image: np.ndarray) -> np.ndarray:
 		# np.clip(image, 0, 255).astype(np.uint8)
 		# ensure the range
 		return (image * 255).astype(np.uint8) if image.max() <= 1 else np.clip(image, 0, 255).astype(np.uint8)
-	
+
 	# main functionality 
 	gray_image = np.dot(image[:, :, :3], [0.2989, 0.5870, 0.1140])
 
-	return (gray_image*255).astype(np.uint8) if gray_image.max() <= 1 else np.clip(gray_image, 0, 255).astype(np.uint8)
+	return (gray_image * 255).astype(np.uint8) if gray_image.max() <= 1 else np.clip(gray_image, 0, 255).astype(
+		np.uint8)
 
 
 def calculateSumOfHist(histogram: np.ndarray) -> np.ndarray:
@@ -175,3 +175,38 @@ def custGenericFilter(image: np.ndarray, function, kernel_size: int = 3, padding
 		return output_image[pad_size: -pad_size, pad_size: -pad_size]
 	else:
 		return output_image
+
+
+def resize(image, new_width, new_height):
+	"""
+	Resize an image to the specified dimensions using Nearest Neighbor Interpolation.
+
+	Parameters:
+	- image (numpy.ndarray): The original image as a 2D or 3D numpy array.
+	- new_width (int): Desired width of the resized image.
+	- new_height (int): Desired height of the resized image.
+
+	Returns:
+	- numpy.ndarray: Resized image.
+	"""
+	# Get the dimensions of the original image
+	orig_height, orig_width = image.shape[:2]
+
+	# Create an empty array for the resized image
+	if len(image.shape) == 3:  # For RGB images
+		resized_image = np.zeros((new_height, new_width, image.shape[2]), dtype=image.dtype)
+	else:  # For grayscale images
+		resized_image = np.zeros((new_height, new_width), dtype=image.dtype)
+
+	# Calculate the scaling factors
+	x_scale = orig_width / new_width
+	y_scale = orig_height / new_height
+
+	# Map each pixel in the resized image to the original image
+	for y in range(new_height):
+		for x in range(new_width):
+			orig_x = int(x * x_scale)
+			orig_y = int(y * y_scale)
+			resized_image[y, x] = image[orig_y, orig_x]
+
+	return resized_image
