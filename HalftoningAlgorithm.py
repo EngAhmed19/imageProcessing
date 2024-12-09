@@ -122,7 +122,6 @@ class HalfToningImage:
 		tiled_matrix = np.tile(bayer_matrix, (width // matrix_size + 1, height // matrix_size + 1))
 		tiled_matrix = tiled_matrix[:width, :height]
 
-		dithered_image: np.ndarray = np.zeros_like(normalized_image)
 		dithered_image = (normalized_image > tiled_matrix).astype(np.uint8) * 255
 
 		return dithered_image
