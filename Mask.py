@@ -29,6 +29,7 @@ class Mask:
 		result_image = (image * (1 - opacity) + masked_image * opacity).astype(np.uint8)
 		return masked_image
 
+
 	def circle_function(self):
 		"""
 		Generate a circular mask for the image.
