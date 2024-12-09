@@ -29,5 +29,18 @@ plt.imshow(low_img, cmap="gray")
 plt.subplot(1, 2, 2)
 plt.imshow(high_img, cmap="gray")
 
-plt.axis("off")
-plt.show()
+# image_flib = image[:, ::-1]
+# image_flib = image[::-1, :]
+# image_flib = image[::-1, ::-1]    
+# image_flib = image[:, ::2]
+
+
+
+# plt.subplot(1, 2, 1)
+# plt.axis("off")
+# plt.imshow(image)
+# plt.subplot(1, 2, 2)
+# plt.imshow(image_flib)
+
+# plt.axis("off")
+# plt.show()
