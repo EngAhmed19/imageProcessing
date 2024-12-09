@@ -10,7 +10,9 @@ from helperFunctions import custImageToGray
 
 # # Load or generate a test image (for example, a random image or one from a file)
 # image = mplt.imread("images/logo.png")
-image = mplt.imread("images/nature.jpg")
+# image = mplt.imread("images/nature.jpg")
+image = mplt.imread("images/flower.png")
+
 # image = mplt.imread("images/bad_light_1.jpg")
 # print(f"image shape {image.shape}, min {image.min()}, max {image.max()}")
 # print(f"image2 shape {image2.shape}, min {image2.min()}, max {image2.max()}")
@@ -23,7 +25,7 @@ segmentation = HistogramBasedSegmentation(
 )
 
 # Preprocess the image (apply noise reduction and contrast enhancement)
-preprocessed_image = segmentation.preprocess(active_contrastEnhancment=False, active_noiseReduction=False)
+preprocessed_image = segmentation.preprocess(active_contrast_enhancement=False, active_noiseReduction=False)
 
 # contrast increase the peaks 
 # Apply manual histogram segmentation with chosen thresholds
@@ -31,10 +33,12 @@ lower_threshold = custDynamicThreshold(preprocessed_image, strategy=ThresholdStr
 upper_threshold = custDynamicThreshold(preprocessed_image, strategy=ThresholdStrategy.MEDIAN_PLUS_STD)
 # segmented_image = segmentation.manual_histogram_segmentation(lower_threshold, upper_threshold)
 # segmented_image = segmentation.peak_histogram_segmentation(peaks_min_distance=30)
-# segmented_image = segmentation.peak_histogram_segmentation(peaks_min_distance=200)
-# segmented_image = segmentation.valley_histogram_segmentation(peaks_min_distance=150)
+# segmented_image = segmentation.peak_histogram_segmentation()
 
-segmented_image = segmentation.adaptive_histogram_segmentation(peaks_min_distance=50)
+# segmented_image = segmentation.peak_histogram_segmentation(peaks_min_distance=200)
+segmented_image = segmentation.valley_histogram_segmentation(peaks_min_distance=50)
+
+# segmented_image = segmentation.adaptive_histogram_segmentation(peaks_min_distance=50)
 
 # Visualize the original, preprocessed, and segmented images using matplotlib
 fig, axes = plt.subplots(1, 4, figsize=(20, 5))
