@@ -3,6 +3,17 @@ import numpy as np
 class Mask:
     def __init__(self):
         pass
+    def mask_function(self):
+        pass
+    def circle_function(self):
+        pass
+    def heart_function(self):
+        # use heart equation
+        pass
+    def tri_function(slef):
+        pass 
+    def apply_mask(self):
+        pass
 
 
 # def apply_circular_mask(image_path, center=None, radius=None, opacity=0.5):
