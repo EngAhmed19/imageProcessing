@@ -346,13 +346,14 @@ def applyImageOperation(image1: np.ndarray, image2: np.ndarray, choice: str, rad
 		resized_image2 = resize(image2, new_width, new_height)
 	if image1 is not None:
 		operator1 = ImageOperation(resized_image1)
+		operator2 = ImageOperation(image1)
 
 		if choice == "Add":
 			return operator1.addImage(resized_image2)  # NOQA
 		elif choice == "Subtract":
 			return operator1.subtractImage(resized_image2)  # NOQA
 		elif choice == "Invert":
-			return operator1.invertImage()
+			return operator2.invertImage()
 		elif choice == "Flipping":
 			flipper = ImageFlipper(image1)
 			return flipper.flip(radio_choose_flipping_str)
