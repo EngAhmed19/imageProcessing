@@ -54,7 +54,7 @@ def calculateTargetSize(image: np.ndarray, kernel: int, padding: int, stride: in
 	w, h = image.shape
 
 	out_shape: tuple[int, int] = (
-		int(((w - kernel + (2 * padding) / stride) + 1)), int(((h - kernel + (2 * padding) / stride) + 1))
+		int((( (w - kernel + 2 * padding) / stride) + 1)), int((((h - kernel + 2 * padding) / stride) + 1))
 	)
 	return out_shape
 
