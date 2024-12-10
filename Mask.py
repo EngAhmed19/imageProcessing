@@ -34,6 +34,7 @@ class Mask:
 	    
 
 
+
 	def circle_function(self):
 		"""
 		Generate a circular mask for the image.
