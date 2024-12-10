@@ -1,4 +1,5 @@
 import numpy as np
+import cv2
 
 
 class Mask:
@@ -22,12 +23,16 @@ class Mask:
 			mask = self.heart_function()
 		else:
 			raise ValueError("Invalid shape_type")
+	
 
-		# Expand the shape of an array
+
+        # Expand the shape of an array
 		# -1 refers to "the last axis"
 		masked_image = image * np.expand_dims(mask, axis=-1) / 255
-		result_image = (image * (1 - opacity) + masked_image * opacity).astype(np.uint8)
+		result_image = image * (1 - opacity) + masked_image * opacity
 		return masked_image
+	    
+
 
 	def circle_function(self):
 		"""
@@ -44,11 +49,10 @@ class Mask:
 
 		center = (width // 2, height // 2)
 		radius = min(width, height) // 2
-
-		y, x = np.ogrid[:height, :width]
-		distance = np.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
-		mask = (distance <= radius).astype(np.uint8) * 255
+		mask = np.zeros((height, width), dtype=np.uint8)
+		mask = cv2.circle(mask, center, radius, 255, -1)
 		return mask
+
 
 	def heart_function(self):
 		"""
@@ -69,16 +73,11 @@ class Mask:
 		# Normalize and scale to fit the image dimensions
 		x = ((x - np.min(x)) / (np.max(x) - np.min(x)) * (width - 1)).astype(np.int32)
 		y = ((y - np.min(y)) / (np.max(y) - np.min(y)) * (height - 1)).astype(np.int32)
-
 		mask = np.zeros((height, width), dtype=np.uint8)
-		for i in range(len(x) - 1):
-			mask[y[i], x[i]] = 255
+		points = np.array([list(zip(x, y))], dtype=np.int32)
+		cv2.fillPoly(mask, points, 255)
+		return mask[::-1, :]
 
-		# mask[::-1, :] reversing the rows
-		# np.maximum.accumulate(arr, axis=0) performs a cumulative maximum operation along the specified axis (rows)
-		# [0, 0, 255, 0, 0]
-		# [0, 0, 255, 255, 255]
-		return np.maximum.accumulate(mask[::-1, :], axis=0)
 
 	def tri_function(self):
 		"""
@@ -88,12 +87,10 @@ class Mask:
 		"""
 		height, width = self.image.shape[:2]
 		mask = np.zeros((height, width), dtype=np.uint8)
-
-		# Define the triangle region
-		# -1 argument shifts the diagonal slightly,
-		# ensuring the triangle starts at (0, 0)
-		y, x = np.tri(height, width, -1, dtype=bool).nonzero()
-
-		# Fill the mask for the lower-left triangle
-		mask[y, x] = 255
+		points = np.array([
+            [width // 2, height // 4],
+            [width // 4, 3 * height // 4],
+            [3 * width // 4, 3 * height // 4]
+        ])
+		cv2.fillPoly(mask, [points], 255)
 		return mask
